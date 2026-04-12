@@ -21,7 +21,9 @@ export default function DownloadCTA() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
             {/* App Store */}
             <a
-              href="#"
+              href="https://apps.apple.com/us/app/chat-hala/id1369295351"
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-3 bg-bg-input border border-border rounded-xl px-6 py-3 hover:border-accent-pink/50 transition-all"
             >
               <Smartphone size={28} className="text-accent-pink" />
