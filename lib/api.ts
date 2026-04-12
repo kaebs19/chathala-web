@@ -46,7 +46,6 @@ export async function api<T>(
   const config: RequestInit = {
     method,
     headers: requestHeaders,
-    credentials: "include",
   };
 
   if (body) {

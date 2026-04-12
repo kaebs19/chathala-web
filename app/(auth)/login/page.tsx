@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
@@ -9,6 +9,7 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { useAuthStore } from "@/stores/authStore";
 import { api } from "@/lib/api";
+import { initAppleSignIn, signInWithApple } from "@/lib/appleAuth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,33 +20,58 @@ export default function LoginPage() {
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [socialError, setSocialError] = useState("");
 
+  useEffect(() => {
+    initAppleSignIn();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
     clearError();
+    setSocialError("");
     const success = await login(email, password);
     if (success) {
       router.push("/chats");
     }
   };
 
-  // ═══════════════════════════════════════
+  const handleSocialSuccess = (res: {
+    success: boolean;
+    token?: string;
+    refreshToken?: string;
+    user?: { _id: string; name: string; email: string };
+    message?: string;
+  }) => {
+    if (res.success && res.token) {
+      localStorage.setItem("token", res.token);
+      if (res.refreshToken)
+        localStorage.setItem("refreshToken", res.refreshToken);
+      if (res.user) {
+        localStorage.setItem("user", JSON.stringify(res.user));
+        setUser(res.user as never);
+      }
+      router.push("/chats");
+    } else {
+      setSocialError(res.message || "فشل تسجيل الدخول");
+    }
+  };
+
   // Google Sign In
-  // ═══════════════════════════════════════
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       setSocialLoading("google");
       setSocialError("");
       try {
-        // أولاً نجيب user info من Google
         const userInfoRes = await fetch(
           "https://www.googleapis.com/oauth2/v3/userinfo",
-          { headers: { Authorization: `Bearer ${tokenResponse.access_token}` } }
+          {
+            headers: {
+              Authorization: `Bearer ${tokenResponse.access_token}`,
+            },
+          }
         );
         const userInfo = await userInfoRes.json();
 
-        // نرسل للسيرفر — السيرفر يتحقق من الـ token
-        // نستخدم access_token مباشرة مع بيانات المستخدم
         const res = (await api("/auth/google", {
           method: "POST",
           body: {
@@ -58,35 +84,56 @@ export default function LoginPage() {
               picture: userInfo.picture,
             },
           },
-        })) as {
-          success: boolean;
-          token?: string;
-          refreshToken?: string;
-          user?: { _id: string; name: string; email: string };
-          message?: string;
-        };
+        })) as typeof handleSocialSuccess extends (a: infer T) => void
+          ? T
+          : never;
 
-        if (res.success && res.token) {
-          localStorage.setItem("token", res.token);
-          if (res.refreshToken) localStorage.setItem("refreshToken", res.refreshToken);
-          if (res.user) {
-            localStorage.setItem("user", JSON.stringify(res.user));
-            setUser(res.user as never);
-          }
-          router.push("/chats");
-        } else {
-          setSocialError(res.message || "فشل تسجيل الدخول عبر Google");
-        }
+        handleSocialSuccess(res);
       } catch {
-        setSocialError("حدث خطأ في الاتصال");
+        setSocialError("فشل الاتصال بـ Google");
       } finally {
         setSocialLoading(null);
       }
     },
-    onError: () => {
-      setSocialError("فشل تسجيل الدخول عبر Google");
-    },
+    onError: () => setSocialError("فشل تسجيل الدخول عبر Google"),
   });
+
+  // Apple Sign In
+  const handleAppleLogin = async () => {
+    setSocialLoading("apple");
+    setSocialError("");
+    try {
+      const appleData = await signInWithApple();
+      if (!appleData) {
+        setSocialError("تم إلغاء تسجيل الدخول");
+        setSocialLoading(null);
+        return;
+      }
+
+      const res = (await api("/auth/apple", {
+        method: "POST",
+        body: {
+          identityToken: appleData.identityToken,
+          authorizationCode: appleData.authorizationCode,
+          fullName: appleData.fullName,
+          email: appleData.email,
+          platform: "web",
+        },
+      })) as {
+        success: boolean;
+        token?: string;
+        refreshToken?: string;
+        user?: { _id: string; name: string; email: string };
+        message?: string;
+      };
+
+      handleSocialSuccess(res);
+    } catch {
+      setSocialError("فشل الاتصال بـ Apple");
+    } finally {
+      setSocialLoading(null);
+    }
+  };
 
   const displayError = error || socialError;
 
@@ -189,7 +236,7 @@ export default function LoginPage() {
         <Button
           variant="secondary"
           className="w-full"
-          onClick={() => setSocialError("تسجيل Apple متاح قريباً على الويب")}
+          onClick={handleAppleLogin}
           isLoading={socialLoading === "apple"}
         >
           <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
