@@ -4,16 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
+import { useGoogleLogin } from "@react-oauth/google";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { useAuthStore } from "@/stores/authStore";
+import { api } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const { login, isLoading, error, clearError, setUser } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<string | null>(null);
+  const [socialError, setSocialError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +28,67 @@ export default function LoginPage() {
       router.push("/chats");
     }
   };
+
+  // ═══════════════════════════════════════
+  // Google Sign In
+  // ═══════════════════════════════════════
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setSocialLoading("google");
+      setSocialError("");
+      try {
+        // أولاً نجيب user info من Google
+        const userInfoRes = await fetch(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          { headers: { Authorization: `Bearer ${tokenResponse.access_token}` } }
+        );
+        const userInfo = await userInfoRes.json();
+
+        // نرسل للسيرفر — السيرفر يتحقق من الـ token
+        // نستخدم access_token مباشرة مع بيانات المستخدم
+        const res = (await api("/auth/google", {
+          method: "POST",
+          body: {
+            idToken: tokenResponse.access_token,
+            platform: "web",
+            googleUserInfo: {
+              sub: userInfo.sub,
+              email: userInfo.email,
+              name: userInfo.name,
+              picture: userInfo.picture,
+            },
+          },
+        })) as {
+          success: boolean;
+          token?: string;
+          refreshToken?: string;
+          user?: { _id: string; name: string; email: string };
+          message?: string;
+        };
+
+        if (res.success && res.token) {
+          localStorage.setItem("token", res.token);
+          if (res.refreshToken) localStorage.setItem("refreshToken", res.refreshToken);
+          if (res.user) {
+            localStorage.setItem("user", JSON.stringify(res.user));
+            setUser(res.user as never);
+          }
+          router.push("/chats");
+        } else {
+          setSocialError(res.message || "فشل تسجيل الدخول عبر Google");
+        }
+      } catch {
+        setSocialError("حدث خطأ في الاتصال");
+      } finally {
+        setSocialLoading(null);
+      }
+    },
+    onError: () => {
+      setSocialError("فشل تسجيل الدخول عبر Google");
+    },
+  });
+
+  const displayError = error || socialError;
 
   return (
     <div className="bg-bg-card border border-border rounded-3xl p-6 sm:p-8">
@@ -80,9 +145,9 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {error && (
+        {displayError && (
           <div className="bg-error/10 border border-error/30 rounded-xl px-4 py-3 text-sm text-error text-center">
-            {error}
+            {displayError}
           </div>
         )}
 
@@ -106,7 +171,12 @@ export default function LoginPage() {
 
       {/* Social Login */}
       <div className="space-y-3">
-        <Button variant="secondary" className="w-full">
+        <Button
+          variant="secondary"
+          className="w-full"
+          onClick={() => googleLogin()}
+          isLoading={socialLoading === "google"}
+        >
           <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -116,7 +186,12 @@ export default function LoginPage() {
           متابعة مع Google
         </Button>
 
-        <Button variant="secondary" className="w-full">
+        <Button
+          variant="secondary"
+          className="w-full"
+          onClick={() => setSocialError("تسجيل Apple متاح قريباً على الويب")}
+          isLoading={socialLoading === "apple"}
+        >
           <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
             <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
           </svg>
