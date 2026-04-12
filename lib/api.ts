@@ -31,8 +31,6 @@ export async function api<T>(
   const token = getToken();
   const requestHeaders: Record<string, string> = {
     ...headers,
-    "X-App-Platform": "web",
-    "X-App-Version": "1.0.0",
   };
 
   if (token) {
