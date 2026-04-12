@@ -1,4 +1,5 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://matchhala.khalafiati.io/api";
+// API requests go through Next.js rewrite proxy → no CORS issues
+const API_BASE = "/api";
 
 type RequestOptions = {
   method?: string;
