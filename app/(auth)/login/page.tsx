@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { useAuthStore } from "@/stores/authStore";
@@ -17,6 +17,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) return;
     clearError();
     const success = await login(email, password);
     if (success) {
@@ -26,10 +27,10 @@ export default function LoginPage() {
 
   return (
     <div className="bg-bg-card border border-border rounded-3xl p-6 sm:p-8">
-      <h1 className="text-2xl font-black text-center mb-2">مرحباً بعودتك!</h1>
-      <p className="text-text-muted text-center mb-8">
-        سجّل دخولك للمتابعة
-      </p>
+      <h1 className="text-2xl font-black text-center mb-2">
+        مرحباً بعودتك!
+      </h1>
+      <p className="text-text-muted text-center mb-8">سجّل دخولك للمتابعة</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
@@ -39,7 +40,7 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           icon={<Mail size={18} />}
-          required
+          autoComplete="email"
           dir="ltr"
         />
 
@@ -51,7 +52,7 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             icon={<Lock size={18} />}
-            required
+            autoComplete="current-password"
             dir="ltr"
           />
           <button
@@ -80,12 +81,18 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div className="bg-error/10 border border-error/30 rounded-xl px-4 py-3 text-sm text-error">
+          <div className="bg-error/10 border border-error/30 rounded-xl px-4 py-3 text-sm text-error text-center">
             {error}
           </div>
         )}
 
-        <Button type="submit" className="w-full" isLoading={isLoading}>
+        <Button
+          type="submit"
+          className="w-full"
+          isLoading={isLoading}
+          disabled={!email || !password}
+        >
+          <LogIn size={18} />
           تسجيل الدخول
         </Button>
       </form>
@@ -120,7 +127,10 @@ export default function LoginPage() {
       {/* Register Link */}
       <p className="text-center text-sm text-text-muted mt-6">
         ليس لديك حساب؟{" "}
-        <Link href="/register" className="text-accent-pink font-bold hover:underline">
+        <Link
+          href="/register"
+          className="text-accent-pink font-bold hover:underline"
+        >
           سجّل الآن
         </Link>
       </p>

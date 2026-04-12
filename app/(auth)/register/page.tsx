@@ -83,7 +83,7 @@ export default function RegisterPage() {
           value={form.name}
           onChange={(e) => update("name", e.target.value)}
           icon={<User size={18} />}
-          required
+          autoComplete="off"
         />
 
         <Input
@@ -93,7 +93,7 @@ export default function RegisterPage() {
           value={form.email}
           onChange={(e) => update("email", e.target.value)}
           icon={<Mail size={18} />}
-          required
+          autoComplete="off"
           dir="ltr"
         />
 
@@ -103,7 +103,7 @@ export default function RegisterPage() {
           value={form.birthDate}
           onChange={(e) => update("birthDate", e.target.value)}
           icon={<Calendar size={18} />}
-          required
+          autoComplete="off"
           dir="ltr"
         />
 
@@ -141,7 +141,7 @@ export default function RegisterPage() {
             value={form.password}
             onChange={(e) => update("password", e.target.value)}
             icon={<Lock size={18} />}
-            required
+            autoComplete="off"
             dir="ltr"
           />
           <button
@@ -160,7 +160,7 @@ export default function RegisterPage() {
           value={form.confirmPassword}
           onChange={(e) => update("confirmPassword", e.target.value)}
           icon={<Lock size={18} />}
-          required
+          autoComplete="off"
           dir="ltr"
         />
 
