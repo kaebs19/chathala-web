@@ -8,8 +8,9 @@ import { useGoogleLogin } from "@react-oauth/google";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { useAuthStore } from "@/stores/authStore";
-import { api } from "@/lib/api";
+import { api, setToken } from "@/lib/api";
 import { initAppleSignIn, signInWithApple } from "@/lib/appleAuth";
+import type { User } from "@/types";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,8 +22,13 @@ export default function LoginPage() {
   const [socialError, setSocialError] = useState("");
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.push("/explore");
+      return;
+    }
     initAppleSignIn();
-  }, []);
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,17 +45,19 @@ export default function LoginPage() {
     success: boolean;
     token?: string;
     refreshToken?: string;
-    user?: { _id: string; name: string; email: string };
+    user?: User;
+    data?: { token?: string; refreshToken?: string; user?: User };
     message?: string;
   }) => {
-    if (res.success && res.token) {
-      localStorage.setItem("token", res.token);
-      if (res.refreshToken)
-        localStorage.setItem("refreshToken", res.refreshToken);
-      if (res.user) {
-        localStorage.setItem("user", JSON.stringify(res.user));
-        setUser(res.user as never);
-      }
+    const token = res.token || res.data?.token;
+    const refreshToken = res.refreshToken || res.data?.refreshToken;
+    const userData = res.user || res.data?.user;
+
+    if (res.success && token && userData) {
+      setToken(token);
+      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
       router.push("/explore");
     } else {
       setSocialError(res.message || "فشل تسجيل الدخول");

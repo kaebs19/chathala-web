@@ -9,6 +9,7 @@ interface ChatState {
   messages: Record<string, Message[]>;
   activeConversation: string | null;
   isLoading: boolean;
+  totalUnread: number;
 
   loadConversations: () => Promise<void>;
   loadMessages: (conversationId: string) => Promise<void>;
@@ -23,6 +24,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   messages: {},
   activeConversation: null,
   isLoading: false,
+  totalUnread: 0,
 
   loadConversations: async () => {
     set({ isLoading: true });
@@ -34,7 +36,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       };
       if (res.success && res.data) {
         const convos = Array.isArray(res.data) ? res.data : res.data.conversations || [];
-        set({ conversations: convos });
+        const serverUnread = !Array.isArray(res.data) ? res.data.totalUnread : undefined;
+        const totalUnread = serverUnread ?? convos.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+        set({ conversations: convos, totalUnread });
       }
     } finally {
       set({ isLoading: false });
@@ -79,5 +83,5 @@ export const useChatStore = create<ChatState>((set, get) => ({
       ),
     })),
 
-  reset: () => set({ conversations: [], messages: {}, activeConversation: null, isLoading: false }),
+  reset: () => set({ conversations: [], messages: {}, activeConversation: null, isLoading: false, totalUnread: 0 }),
 }));

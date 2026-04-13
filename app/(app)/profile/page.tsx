@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import {
   Edit3,
@@ -18,12 +18,14 @@ import Card from "@/components/ui/Card";
 import { useAuthStore } from "@/stores/authStore";
 import { authAPI } from "@/lib/api";
 import { toast } from "@/components/ui/Toast";
+import Lightbox from "@/components/ui/Lightbox";
 import { getAge, getImageUrl } from "@/lib/utils";
 import type { User } from "@/types";
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -128,16 +130,18 @@ export default function ProfilePage() {
           <h3 className="font-bold mb-3">الصور</h3>
           <div className="grid grid-cols-3 gap-2">
             {user.photos.map((photo, i) => (
-              <div
+              <button
                 key={i}
-                className="aspect-square rounded-xl overflow-hidden bg-bg-card border border-border"
+                onClick={() => setLightboxIndex(i)}
+                className="aspect-square rounded-xl overflow-hidden bg-bg-card border border-border hover:opacity-80 transition-opacity cursor-pointer"
               >
                 <img
                   src={getImageUrl(photo)}
                   alt={`صورة ${i + 1}`}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -188,6 +192,15 @@ export default function ProfilePage() {
           </Link>
         )}
       </div>
+
+      {/* Lightbox */}
+      {lightboxIndex !== null && user.photos && (
+        <Lightbox
+          images={user.photos}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
     </div>
   );
 }

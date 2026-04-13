@@ -23,10 +23,10 @@ import { disconnectSocket } from "@/lib/socket";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/chats", icon: MessageCircle, label: "المحادثات" },
+  { href: "/chats", icon: MessageCircle, label: "المحادثات", badgeKey: "chats" as const },
   { href: "/explore", icon: Compass, label: "اكتشاف" },
   { href: "/matches", icon: Heart, label: "مطابقات" },
-  { href: "/notifications", icon: Bell, label: "إشعارات", badge: true },
+  { href: "/notifications", icon: Bell, label: "إشعارات", badgeKey: "notifications" as const },
   { href: "/profile", icon: User, label: "بروفايلي" },
 ];
 
@@ -35,7 +35,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, isAuthenticated, isLoading, loadUser, logout } = useAuthStore();
   const { unreadCount, loadNotifications, reset: resetNotifications } = useNotificationStore();
-  const { reset: resetChat } = useChatStore();
+  const { totalUnread: chatUnread, loadConversations, reset: resetChat } = useChatStore();
   useSocket();
   const [ready, setReady] = useState(false);
 
@@ -47,6 +47,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
     loadUser().finally(() => setReady(true));
     loadNotifications();
+    loadConversations();
   }, [loadUser, router]);
 
   if (!ready) {
@@ -116,11 +117,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               >
                 <item.icon size={20} />
                 <span>{item.label}</span>
-                {item.badge && unreadCount > 0 && (
-                  <span className="mr-auto bg-error text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
+                {(() => {
+                  const count = item.badgeKey === "notifications" ? unreadCount : item.badgeKey === "chats" ? chatUnread : 0;
+                  return count > 0 ? (
+                    <span className="mr-auto bg-error text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                      {count > 9 ? "9+" : count}
+                    </span>
+                  ) : null;
+                })()}
               </Link>
             );
           })}
@@ -186,11 +190,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               >
                 <item.icon size={22} />
                 <span className="text-[10px] font-medium">{item.label}</span>
-                {item.badge && unreadCount > 0 && (
-                  <span className="absolute -top-0.5 right-1 bg-error text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                    {unreadCount > 9 ? "+" : unreadCount}
-                  </span>
-                )}
+                {(() => {
+                  const count = item.badgeKey === "notifications" ? unreadCount : item.badgeKey === "chats" ? chatUnread : 0;
+                  return count > 0 ? (
+                    <span className="absolute -top-0.5 right-1 bg-error text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      {count > 9 ? "+" : count}
+                    </span>
+                  ) : null;
+                })()}
               </Link>
             );
           })}

@@ -7,6 +7,12 @@ import { useNotificationStore } from "@/stores/notificationStore";
 import { useAuthStore } from "@/stores/authStore";
 import type { Message, Notification } from "@/types";
 
+// Global online users set — accessible from anywhere
+let onlineUsersSet = new Set<string>();
+let onlineListeners: (() => void)[] = [];
+export function isUserOnline(userId: string): boolean { return onlineUsersSet.has(userId); }
+export function subscribeOnline(fn: () => void) { onlineListeners.push(fn); return () => { onlineListeners = onlineListeners.filter(l => l !== fn); }; }
+
 export function useSocket() {
   const { user } = useAuthStore();
   const { addMessage, updateConversation, loadConversations } = useChatStore();
@@ -41,6 +47,23 @@ export function useSocket() {
     socket.on(SocketEvents.CONVERSATION_ACCEPTED, () => {
       loadConversations();
     });
+
+    socket.on(SocketEvents.USER_ONLINE, (data: { userId: string }) => {
+      onlineUsersSet.add(data.userId);
+      onlineListeners.forEach(fn => fn());
+    });
+
+    socket.on(SocketEvents.USER_OFFLINE, (data: { userId: string }) => {
+      onlineUsersSet.delete(data.userId);
+      onlineListeners.forEach(fn => fn());
+    });
+
+    socket.on(SocketEvents.ONLINE_USERS_LIST, (data: { users: string[] }) => {
+      onlineUsersSet = new Set(data.users);
+      onlineListeners.forEach(fn => fn());
+    });
+
+    socket.emit(SocketEvents.GET_ONLINE_USERS);
 
     return () => {
       disconnectSocket();

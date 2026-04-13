@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, Mail, Lock, Calendar, Eye, EyeOff } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { useAuthStore } from "@/stores/authStore";
+import { getAge } from "@/lib/utils";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,6 +23,11 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState("");
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) router.push("/explore");
+  }, [router]);
+
   const update = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     clearError();
@@ -31,6 +37,11 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError("");
+
+    if (!form.email.includes("@") || !form.email.includes(".")) {
+      setLocalError("البريد الإلكتروني غير صحيح");
+      return;
+    }
 
     if (form.password !== form.confirmPassword) {
       setLocalError("كلمات المرور غير متطابقة");
@@ -47,9 +58,7 @@ export default function RegisterPage() {
       return;
     }
 
-    const birthDate = new Date(form.birthDate);
-    const age = new Date().getFullYear() - birthDate.getFullYear();
-    if (age < 18) {
+    if (getAge(form.birthDate) < 18) {
       setLocalError("يجب أن يكون عمرك 18 سنة على الأقل");
       return;
     }
@@ -83,7 +92,7 @@ export default function RegisterPage() {
           value={form.name}
           onChange={(e) => update("name", e.target.value)}
           icon={<User size={18} />}
-          autoComplete="off"
+          autoComplete="on"
         />
 
         <Input
@@ -93,7 +102,7 @@ export default function RegisterPage() {
           value={form.email}
           onChange={(e) => update("email", e.target.value)}
           icon={<Mail size={18} />}
-          autoComplete="off"
+          autoComplete="on"
           dir="ltr"
         />
 
@@ -103,7 +112,7 @@ export default function RegisterPage() {
           value={form.birthDate}
           onChange={(e) => update("birthDate", e.target.value)}
           icon={<Calendar size={18} />}
-          autoComplete="off"
+          autoComplete="on"
           dir="ltr"
         />
 
@@ -141,7 +150,7 @@ export default function RegisterPage() {
             value={form.password}
             onChange={(e) => update("password", e.target.value)}
             icon={<Lock size={18} />}
-            autoComplete="off"
+            autoComplete="on"
             dir="ltr"
           />
           <button
@@ -160,7 +169,7 @@ export default function RegisterPage() {
           value={form.confirmPassword}
           onChange={(e) => update("confirmPassword", e.target.value)}
           icon={<Lock size={18} />}
-          autoComplete="off"
+          autoComplete="on"
           dir="ltr"
         />
 
