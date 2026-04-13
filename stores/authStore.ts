@@ -38,13 +38,19 @@ export const useAuthStore = create<AuthState>((set) => ({
         token?: string;
         refreshToken?: string;
         user?: User;
+        data?: { token?: string; refreshToken?: string; user?: User };
         message?: string;
       };
-      if (res.success && res.token && res.user) {
-        setToken(res.token);
-        if (res.refreshToken) localStorage.setItem("refreshToken", res.refreshToken);
-        localStorage.setItem("user", JSON.stringify(res.user));
-        set({ user: res.user, isAuthenticated: true, isLoading: false });
+      // السيرفر يرسل token/user داخل data أو في root
+      const token = res.token || res.data?.token;
+      const refreshToken = res.refreshToken || res.data?.refreshToken;
+      const user = res.user || res.data?.user;
+
+      if (res.success && token && user) {
+        setToken(token);
+        if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem("user", JSON.stringify(user));
+        set({ user, isAuthenticated: true, isLoading: false });
         return true;
       }
       set({ error: res.message || "فشل تسجيل الدخول", isLoading: false });
@@ -63,13 +69,18 @@ export const useAuthStore = create<AuthState>((set) => ({
         token?: string;
         refreshToken?: string;
         user?: User;
+        data?: { token?: string; refreshToken?: string; user?: User };
         message?: string;
       };
-      if (res.success && res.token && res.user) {
-        setToken(res.token);
-        if (res.refreshToken) localStorage.setItem("refreshToken", res.refreshToken);
-        localStorage.setItem("user", JSON.stringify(res.user));
-        set({ user: res.user, isAuthenticated: true, isLoading: false });
+      const token = res.token || res.data?.token;
+      const refreshToken = res.refreshToken || res.data?.refreshToken;
+      const user = res.user || res.data?.user;
+
+      if (res.success && token && user) {
+        setToken(token);
+        if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem("user", JSON.stringify(user));
+        set({ user, isAuthenticated: true, isLoading: false });
         return true;
       }
       set({ error: res.message || "فشل إنشاء الحساب", isLoading: false });
