@@ -103,13 +103,24 @@ export const useAuthStore = create<AuthState>((set) => ({
       return;
     }
     try {
-      const res = (await authAPI.me()) as { success: boolean; data?: User };
-      if (res.success && res.data) {
-        set({ user: res.data, isAuthenticated: true, isLoading: false });
-        localStorage.setItem("user", JSON.stringify(res.data));
+      const res = (await authAPI.me()) as {
+        success: boolean;
+        data?: { user?: User } | User;
+      };
+      // السيرفر يرسل { data: { user: {...} } }
+      const user = res.data && "user" in res.data ? (res.data as { user: User }).user : (res.data as User);
+      if (res.success && user) {
+        set({ user, isAuthenticated: true, isLoading: false });
+        localStorage.setItem("user", JSON.stringify(user));
       } else {
-        removeToken();
-        set({ isLoading: false });
+        // جرّب الـ cache
+        const cached = localStorage.getItem("user");
+        if (cached) {
+          set({ user: JSON.parse(cached), isAuthenticated: true, isLoading: false });
+        } else {
+          removeToken();
+          set({ isLoading: false });
+        }
       }
     } catch {
       const cached = localStorage.getItem("user");

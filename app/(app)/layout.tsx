@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -25,7 +25,6 @@ const navItems = [
   { href: "/matches", icon: Heart, label: "مطابقات" },
   { href: "/notifications", icon: Bell, label: "إشعارات", badge: true },
   { href: "/profile", icon: User, label: "بروفايلي" },
-  { href: "/settings", icon: Settings, label: "الإعدادات" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -33,18 +32,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, isAuthenticated, isLoading, loadUser, logout } = useAuthStore();
   const { unreadCount } = useNotificationStore();
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    loadUser();
-  }, [loadUser]);
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    const token = localStorage.getItem("token");
+    if (!token) {
       router.push("/login");
+      return;
     }
-  }, [isLoading, isAuthenticated, router]);
+    loadUser().finally(() => setReady(true));
+  }, [loadUser, router]);
 
-  if (isLoading) {
+  if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -55,14 +54,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated && !isLoading) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-64 bg-bg-secondary border-l border-border fixed right-0 top-0 bottom-0 z-40">
         {/* Logo */}
-        <div className="p-6 border-b border-border">
+        <div className="p-5 border-b border-border">
           <Link href="/chats">
             <Logo />
           </Link>
@@ -70,7 +71,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* User Info */}
         <div className="p-4 border-b border-border">
-          <Link href="/profile" className="flex items-center gap-3 p-2 rounded-xl hover:bg-bg-hover transition-colors">
+          <Link
+            href="/profile"
+            className="flex items-center gap-3 p-2 rounded-xl hover:bg-bg-hover transition-colors"
+          >
             <Avatar
               src={user?.profileImage}
               name={user?.name}
@@ -79,8 +83,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               isPremium={user?.isPremium}
             />
             <div className="min-w-0">
-              <p className="font-bold text-sm truncate">{user?.name}</p>
-              <p className="text-xs text-text-muted truncate">{user?.email}</p>
+              <p className="font-bold text-sm truncate">
+                {user?.name || "مستخدم"}
+              </p>
+              <p className="text-xs text-text-muted truncate">
+                {user?.email || ""}
+              </p>
             </div>
           </Link>
         </div>
@@ -111,7 +119,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             );
           })}
 
-          {/* Premium */}
+          <Link
+            href="/settings"
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all mt-2",
+              pathname.startsWith("/settings")
+                ? "gradient-bg text-white"
+                : "text-text-secondary hover:bg-bg-hover"
+            )}
+          >
+            <Settings size={20} />
+            <span>الإعدادات</span>
+          </Link>
+
           {!user?.isPremium && (
             <Link
               href="/premium"
@@ -142,9 +162,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 lg:mr-64 pb-20 lg:pb-0">{children}</main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass border-t border-border">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass border-t border-border safe-area-bottom">
         <div className="flex items-center justify-around h-16">
-          {navItems.slice(0, 5).map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (
               <Link
