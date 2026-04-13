@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://matchhala.khalafiati.io/api/:path*",
+        destination: "http://127.0.0.1:3000/api/:path*",
       },
     ];
   },
