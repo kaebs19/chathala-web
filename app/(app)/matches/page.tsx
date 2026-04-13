@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Heart, MessageCircle } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import { matchAPI } from "@/lib/api";
+import { MatchSkeleton } from "@/components/ui/Skeleton";
 import type { Match, ApiResponse } from "@/types";
 
 export default function MatchesPage() {
@@ -14,8 +15,15 @@ export default function MatchesPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = (await matchAPI.getMatches()) as ApiResponse<Match[]>;
-        if (res.success && res.data) setMatches(res.data);
+        // Server: { success, data: { matches: [...] } }
+        const res = (await matchAPI.getMatches()) as {
+          success: boolean;
+          data?: { matches?: Match[] } | Match[];
+        };
+        if (res.success && res.data) {
+          const list = Array.isArray(res.data) ? res.data : res.data.matches || [];
+          setMatches(list);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -31,9 +39,7 @@ export default function MatchesPage() {
 
       <div className="flex-1 overflow-y-auto p-4">
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-3 border-accent-pink border-t-transparent rounded-full animate-spin" />
-          </div>
+          <MatchSkeleton />
         ) : matches.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Heart size={48} className="text-text-muted/30 mb-4" />
@@ -51,24 +57,26 @@ export default function MatchesPage() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {matches.map((match) => {
-              const otherUser = match.users?.[0];
+              const otherUser = match.user || match.users?.[0];
               return (
                 <div
                   key={match._id}
                   className="bg-bg-card border border-border rounded-2xl p-4 text-center hover:border-accent-pink/50 transition-all"
                 >
-                  <Avatar
-                    src={otherUser?.profileImage}
-                    name={otherUser?.name}
-                    size="lg"
-                    isOnline={otherUser?.isOnline}
-                    className="mx-auto mb-3"
-                  />
-                  <h3 className="font-bold text-sm truncate">
-                    {otherUser?.name}
-                  </h3>
+                  <Link href={`/profile/${otherUser?._id}`}>
+                    <Avatar
+                      src={otherUser?.profileImage}
+                      name={otherUser?.name}
+                      size="lg"
+                      isOnline={otherUser?.isOnline}
+                      className="mx-auto mb-3"
+                    />
+                    <h3 className="font-bold text-sm truncate">
+                      {otherUser?.name}
+                    </h3>
+                  </Link>
                   <Link
-                    href="/chats"
+                    href={match.conversationId ? `/chats/${match.conversationId}` : "/chats"}
                     className="mt-3 flex items-center justify-center gap-1 text-accent-pink text-sm font-medium hover:underline"
                   >
                     <MessageCircle size={14} />

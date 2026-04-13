@@ -23,14 +23,17 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   loadNotifications: async () => {
     set({ isLoading: true });
     try {
+      // Server: { success, data: { notifications: [...], unreadCount } }
       const res = (await notificationAPI.getNotifications()) as {
         success: boolean;
-        data?: Notification[];
+        data?: { notifications?: Notification[]; unreadCount?: number } | Notification[];
       };
       if (res.success && res.data) {
+        const notifs = Array.isArray(res.data) ? res.data : res.data.notifications || [];
+        const serverUnread = !Array.isArray(res.data) ? res.data.unreadCount : undefined;
         set({
-          notifications: res.data,
-          unreadCount: res.data.filter((n) => !n.read).length,
+          notifications: notifs,
+          unreadCount: serverUnread ?? notifs.filter((n) => !n.read).length,
         });
       }
     } finally {

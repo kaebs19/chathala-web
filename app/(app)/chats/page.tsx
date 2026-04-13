@@ -5,12 +5,16 @@ import Link from "next/link";
 import { MessageCircle, Search } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import { useChatStore } from "@/stores/chatStore";
+import { useAuthStore } from "@/stores/authStore";
 import { formatDate, truncate } from "@/lib/utils";
 import type { User } from "@/types";
 import { cn } from "@/lib/utils";
+import { ChatSkeleton } from "@/components/ui/Skeleton";
 
 export default function ChatsPage() {
   const { conversations, isLoading, loadConversations } = useChatStore();
+  const { user } = useAuthStore();
+  const myId = user?._id || user?.id;
 
   useEffect(() => {
     loadConversations();
@@ -37,9 +41,7 @@ export default function ChatsPage() {
       {/* Conversations List */}
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-3 border-accent-pink border-t-transparent rounded-full animate-spin" />
-          </div>
+          <ChatSkeleton />
         ) : conversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center px-4">
             <MessageCircle size={48} className="text-text-muted/30 mb-4" />
@@ -57,7 +59,7 @@ export default function ChatsPage() {
         ) : (
           conversations.map((conv) => {
             const otherUser = conv.participants?.find(
-              (p: User) => p._id !== "me"
+              (p: User) => p._id !== myId
             ) as User | undefined;
             return (
               <Link

@@ -26,12 +26,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
   loadConversations: async () => {
     set({ isLoading: true });
     try {
+      // Server: { success, data: { conversations: [...], totalUnread } }
       const res = (await chatAPI.getConversations()) as {
         success: boolean;
-        data?: Conversation[];
+        data?: { conversations?: Conversation[]; totalUnread?: number } | Conversation[];
       };
       if (res.success && res.data) {
-        set({ conversations: res.data });
+        const convos = Array.isArray(res.data) ? res.data : res.data.conversations || [];
+        set({ conversations: convos });
       }
     } finally {
       set({ isLoading: false });
@@ -40,13 +42,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   loadMessages: async (conversationId) => {
     try {
+      // Server: { success, data: { messages: [...] } }
       const res = (await chatAPI.getMessages(conversationId)) as {
         success: boolean;
-        data?: Message[];
+        data?: { messages?: Message[] } | Message[];
       };
       if (res.success && res.data) {
+        const msgs = Array.isArray(res.data) ? res.data : res.data.messages || [];
         set((state) => ({
-          messages: { ...state.messages, [conversationId]: res.data! },
+          messages: { ...state.messages, [conversationId]: msgs },
         }));
       }
     } catch {

@@ -40,7 +40,7 @@ export function getImageUrl(path?: string): string {
   if (!path) return "/images/default-avatar.svg";
   if (path.startsWith("http")) return path;
   const base =
-    process.env.NEXT_PUBLIC_API_URL || "https://matchhala.khalafiati.io";
+    process.env.NEXT_PUBLIC_API_URL || "https://matchhala.chathala.com";
   return `${base.replace("/api", "")}/uploads/${path}`;
 }
 

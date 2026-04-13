@@ -17,6 +17,7 @@ import Logo from "@/components/shared/Logo";
 import Avatar from "@/components/ui/Avatar";
 import { useAuthStore } from "@/stores/authStore";
 import { useNotificationStore } from "@/stores/notificationStore";
+import { useSocket } from "@/hooks/useSocket";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -31,7 +32,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, isLoading, loadUser, logout } = useAuthStore();
-  const { unreadCount } = useNotificationStore();
+  const { unreadCount, loadNotifications } = useNotificationStore();
+  useSocket();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -41,6 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       return;
     }
     loadUser().finally(() => setReady(true));
+    loadNotifications();
   }, [loadUser, router]);
 
   if (!ready) {

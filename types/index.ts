@@ -78,15 +78,20 @@ export interface Notification {
   type: string;
   title?: string;
   body?: string;
+  sender?: User;
   relatedUser?: User;
   relatedConversation?: string;
-  read: boolean;
+  read?: boolean;
+  readBy?: { _id: string; readAt: string }[];
+  image?: string;
   createdAt: string;
 }
 
 export interface Match {
   _id: string;
-  users: User[];
+  user?: User;
+  users?: User[];
+  conversationId?: string;
   createdAt: string;
 }
 

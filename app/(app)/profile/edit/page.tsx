@@ -20,13 +20,17 @@ export default function EditProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Server: { success, data: { user: {...} } }
       const res = (await authAPI.updateProfile(form)) as {
         success: boolean;
-        data?: typeof user;
+        data?: { user?: typeof user } | typeof user;
       };
       if (res.success && res.data) {
-        setUser(res.data);
-        router.push("/profile");
+        const updated = res.data && "user" in (res.data as object) ? (res.data as { user: typeof user }).user : res.data as typeof user;
+        if (updated) {
+          setUser(updated);
+          router.push("/profile");
+        }
       }
     } finally {
       setSaving(false);

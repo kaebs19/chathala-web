@@ -167,6 +167,10 @@ export const matchAPI = {
   deleteMatch: (id: string) => api(`/matches/${id}`, { method: "DELETE" }),
 };
 
+export const userAPI = {
+  getProfile: (userId: string) => api(`/users/${userId}`),
+};
+
 export const settingsAPI = {
   getPrivacyPolicy: () => api("/settings/privacy-policy"),
   getTerms: () => api("/settings/terms"),
