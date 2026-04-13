@@ -47,10 +47,11 @@ export interface Message {
 export interface Conversation {
   _id: string;
   participants: User[];
+  creator?: string;
   lastMessage?: Message;
   unreadCount?: number;
   isMuted?: boolean;
-  status: "accepted" | "pending" | "rejected" | "expired";
+  status?: "accepted" | "pending" | "rejected" | "expired";
   chatMode?: "public" | "private" | "stealth";
   createdAt: string;
   updatedAt?: string;

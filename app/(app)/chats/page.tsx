@@ -26,15 +26,22 @@ export default function ChatsPage() {
     const pending: Conversation[] = [];
     conversations.forEach((conv) => {
       if (conv.status === "pending") {
-        // Only show pending if I'm NOT the one who sent the request
-        // (the creator is the first participant usually, but we check if lastMessage sender is me)
-        pending.push(conv);
-      } else if (conv.status === "accepted") {
+        // Show as pending request only if someone ELSE sent it to me
+        const creatorId = conv.creator;
+        const iAmCreator = creatorId === myId;
+        if (!iAmCreator) {
+          pending.push(conv);
+        } else {
+          // I sent this request — show in accepted list as "بانتظار القبول"
+          accepted.push(conv);
+        }
+      } else {
+        // accepted, rejected, expired, or no status → show in main list
         accepted.push(conv);
       }
     });
     return { accepted, pending };
-  }, [conversations]);
+  }, [conversations, myId]);
 
   const filteredConversations = useMemo(() => {
     if (!search.trim()) return accepted;
@@ -215,9 +222,11 @@ export default function ChatsPage() {
                       </div>
                       <div className="flex items-center justify-between mt-1">
                         <p className="text-sm text-text-muted truncate">
-                          {conv.lastMessage
-                            ? truncate(conv.lastMessage.content || "صورة", 40)
-                            : "ابدأ المحادثة..."}
+                          {conv.status === "pending" && conv.creator === myId
+                            ? "⏳ بانتظار القبول"
+                            : conv.lastMessage
+                              ? truncate(conv.lastMessage.content || "صورة", 40)
+                              : "ابدأ المحادثة..."}
                         </p>
                         {(conv.unreadCount ?? 0) > 0 && (
                           <span className="bg-accent-pink text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0 mr-2">
