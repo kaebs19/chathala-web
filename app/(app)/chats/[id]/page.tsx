@@ -91,7 +91,7 @@ export default function ChatRoomPage() {
           chatMessages.map((msg) => {
             const senderId =
               typeof msg.sender === "string" ? msg.sender : msg.sender?._id;
-            const isMine = senderId === user?._id;
+            const isMine = senderId === (user?._id || user?.id);
             return (
               <div
                 key={msg._id}

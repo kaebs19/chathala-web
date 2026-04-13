@@ -63,7 +63,7 @@ export default function RegisterPage() {
     });
 
     if (success) {
-      router.push("/chats");
+      router.push("/explore");
     }
   };
 

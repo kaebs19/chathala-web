@@ -31,7 +31,7 @@ export default function LoginPage() {
     setSocialError("");
     const success = await login(email, password);
     if (success) {
-      router.push("/chats");
+      router.push("/explore");
     }
   };
 
@@ -50,7 +50,7 @@ export default function LoginPage() {
         localStorage.setItem("user", JSON.stringify(res.user));
         setUser(res.user as never);
       }
-      router.push("/chats");
+      router.push("/explore");
     } else {
       setSocialError(res.message || "فشل تسجيل الدخول");
     }
