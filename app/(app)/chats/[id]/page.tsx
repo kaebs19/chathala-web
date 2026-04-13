@@ -75,23 +75,37 @@ export default function ChatRoomPage() {
 
   const handleSend = async () => {
     if (!text.trim() || sending) return;
+    const content = text.trim();
     setSending(true);
+    setText("");
     try {
-      // Server: { success, data: { message: {...} } }
+      // Server: { success, data: { message: {...} }, message?: string, warning?: {...} }
       const res = (await chatAPI.sendMessage(
         conversationId,
-        text.trim()
+        content
       )) as {
         success: boolean;
         data?: { message?: Message } | Message;
+        message?: string;
+        warning?: { message: string };
       };
       if (res.success && res.data) {
-        const msg = "message" in (res.data as object) ? (res.data as { message: Message }).message : res.data as Message;
+        const msg = res.data && "message" in (res.data as object)
+          ? (res.data as { message: Message }).message
+          : (res.data as Message);
         if (msg) {
           addMessage(conversationId, msg);
-          setText("");
         }
+        if (res.warning) {
+          toast(res.warning.message, "error", 5000);
+        }
+      } else {
+        setText(content);
+        toast(res.message || "فشل إرسال الرسالة", "error");
       }
+    } catch {
+      setText(content);
+      toast("حدث خطأ في الاتصال", "error");
     } finally {
       setSending(false);
     }
@@ -142,7 +156,7 @@ export default function ChatRoomPage() {
             return (
               <div
                 key={msg._id}
-                className={cn("flex animate-fade-in-up", isMine ? "justify-start" : "justify-end")}
+                className={cn("flex animate-fade-in-up", isMine ? "justify-end" : "justify-start")}
                 style={{ animationDuration: "0.2s" }}
               >
                 <div
@@ -150,8 +164,8 @@ export default function ChatRoomPage() {
                     "max-w-[75%] rounded-2xl overflow-hidden",
                     msg.type === "image" ? "p-1" : "px-4 py-2.5",
                     isMine
-                      ? "gradient-bg text-white rounded-br-md"
-                      : "bg-bg-card border border-border text-text-primary rounded-bl-md"
+                      ? "gradient-bg text-white rounded-bl-md"
+                      : "bg-bg-card border border-border text-text-primary rounded-br-md"
                   )}
                 >
                   {/* Reply preview */}
@@ -198,7 +212,7 @@ export default function ChatRoomPage() {
                     <p className="text-xs text-center opacity-60">{msg.content}</p>
                   )}
 
-                  <div className={cn("flex items-center gap-1 mt-1", isMine ? "justify-start" : "justify-end")}>
+                  <div className={cn("flex items-center gap-1 mt-1", isMine ? "justify-end" : "justify-start")}>
                     <span className={cn("text-[10px]", isMine ? "text-white/60" : "text-text-muted")}>
                       {formatTime(msg.createdAt)}
                     </span>

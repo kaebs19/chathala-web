@@ -15,7 +15,7 @@ import {
 import Avatar from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import { api, chatAPI, exploreAPI } from "@/lib/api";
+import { userAPI, chatAPI, exploreAPI } from "@/lib/api";
 import { getAge, getImageUrl } from "@/lib/utils";
 import type { User } from "@/types";
 
@@ -30,7 +30,7 @@ export default function UserProfilePage() {
   useEffect(() => {
     async function loadProfile() {
       try {
-        const res = (await api(`/users/${userId}`)) as {
+        const res = (await userAPI.getProfile(userId)) as {
           success: boolean;
           data?: { user?: User } | User;
         };

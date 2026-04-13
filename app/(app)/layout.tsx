@@ -17,7 +17,9 @@ import Logo from "@/components/shared/Logo";
 import Avatar from "@/components/ui/Avatar";
 import { useAuthStore } from "@/stores/authStore";
 import { useNotificationStore } from "@/stores/notificationStore";
+import { useChatStore } from "@/stores/chatStore";
 import { useSocket } from "@/hooks/useSocket";
+import { disconnectSocket } from "@/lib/socket";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -32,7 +34,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, isLoading, loadUser, logout } = useAuthStore();
-  const { unreadCount, loadNotifications } = useNotificationStore();
+  const { unreadCount, loadNotifications, reset: resetNotifications } = useNotificationStore();
+  const { reset: resetChat } = useChatStore();
   useSocket();
   const [ready, setReady] = useState(false);
 
@@ -150,6 +153,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="p-3 border-t border-border">
           <button
             onClick={() => {
+              disconnectSocket();
+              resetChat();
+              resetNotifications();
               logout();
               router.push("/");
             }}

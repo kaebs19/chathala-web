@@ -13,6 +13,7 @@ interface NotificationState {
   markRead: (id: string) => Promise<void>;
   markAllRead: () => Promise<void>;
   addNotification: (notification: Notification) => void;
+  reset: () => void;
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
@@ -64,4 +65,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       notifications: [notification, ...state.notifications],
       unreadCount: state.unreadCount + 1,
     })),
+
+  reset: () => set({ notifications: [], unreadCount: 0, isLoading: false }),
 }));

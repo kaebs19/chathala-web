@@ -168,7 +168,7 @@ export const matchAPI = {
 };
 
 export const userAPI = {
-  getProfile: (userId: string) => api(`/users/${userId}`),
+  getProfile: (userId: string) => api(`/users/${userId}/profile`),
 };
 
 export const settingsAPI = {

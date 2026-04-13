@@ -15,6 +15,7 @@ interface ChatState {
   setActiveConversation: (id: string | null) => void;
   addMessage: (conversationId: string, message: Message) => void;
   updateConversation: (conversation: Conversation) => void;
+  reset: () => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -77,4 +78,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
         c._id === conversation._id ? conversation : c
       ),
     })),
+
+  reset: () => set({ conversations: [], messages: {}, activeConversation: null, isLoading: false }),
 }));
