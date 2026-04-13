@@ -15,6 +15,7 @@ import {
 import Avatar from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import ReportModal from "@/components/ui/ReportModal";
 import { userAPI, chatAPI, exploreAPI } from "@/lib/api";
 import { getAge, getImageUrl } from "@/lib/utils";
 import type { User } from "@/types";
@@ -26,6 +27,7 @@ export default function UserProfilePage() {
   const [profile, setProfile] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -217,7 +219,19 @@ export default function UserProfilePage() {
           <Heart size={18} />
           إعجاب
         </Button>
+        <Button variant="ghost" onClick={() => setShowReport(true)}>
+          <Flag size={18} className="text-error/60" />
+        </Button>
       </div>
+
+      {/* Report Modal */}
+      {showReport && (
+        <ReportModal
+          userId={userId}
+          userName={profile.name}
+          onClose={() => setShowReport(false)}
+        />
+      )}
     </div>
   );
 }

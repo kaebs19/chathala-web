@@ -10,6 +10,8 @@ import {
   Mic,
   MoreVertical,
   Phone,
+  Flag,
+  User as UserIcon,
 } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import { useChatStore } from "@/stores/chatStore";
@@ -20,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { useSocket } from "@/hooks/useSocket";
 import { getSocket, SocketEvents } from "@/lib/socket";
 import { toast } from "@/components/ui/Toast";
+import ReportModal from "@/components/ui/ReportModal";
 import type { Message, User } from "@/types";
 
 export default function ChatRoomPage() {
@@ -27,10 +30,12 @@ export default function ChatRoomPage() {
   const router = useRouter();
   const conversationId = params.id as string;
   const { user } = useAuthStore();
-  const { messages, conversations, loadMessages, loadConversations, addMessage } = useChatStore();
+  const { messages, conversations, loadMessages, loadConversations, addMessage, setActiveConversation } = useChatStore();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -49,6 +54,7 @@ export default function ChatRoomPage() {
       loadMessages(conversationId);
       joinConversation(conversationId);
       markRead(conversationId);
+      setActiveConversation(conversationId);
       if (conversations.length === 0) loadConversations();
 
       const socket = getSocket();
@@ -62,6 +68,7 @@ export default function ChatRoomPage() {
       socket?.on("stop-typing", handleStopTyping);
 
       return () => {
+        setActiveConversation(null);
         leaveConversation(conversationId);
         socket?.off(SocketEvents.USER_TYPING, handleTyping);
         socket?.off("stop-typing", handleStopTyping);
@@ -136,9 +143,36 @@ export default function ChatRoomPage() {
           <button className="p-2 text-text-muted hover:text-text-primary hover:bg-bg-hover rounded-xl transition-colors">
             <Phone size={18} />
           </button>
-          <button className="p-2 text-text-muted hover:text-text-primary hover:bg-bg-hover rounded-xl transition-colors">
-            <MoreVertical size={18} />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-2 text-text-muted hover:text-text-primary hover:bg-bg-hover rounded-xl transition-colors"
+            >
+              <MoreVertical size={18} />
+            </button>
+            {showMenu && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setShowMenu(false)} />
+                <div className="absolute left-0 top-full mt-1 z-40 bg-bg-card border border-border rounded-xl shadow-lg overflow-hidden min-w-[160px] animate-fade-in-up" style={{ animationDuration: "0.15s" }}>
+                  <Link
+                    href={otherUser?._id ? `/profile/${otherUser._id}` : "#"}
+                    className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-bg-hover transition-colors"
+                    onClick={() => setShowMenu(false)}
+                  >
+                    <UserIcon size={16} className="text-text-muted" />
+                    عرض البروفايل
+                  </Link>
+                  <button
+                    onClick={() => { setShowMenu(false); setShowReport(true); }}
+                    className="flex items-center gap-2 px-4 py-3 text-sm text-error/80 hover:bg-error/5 transition-colors w-full text-right"
+                  >
+                    <Flag size={16} />
+                    إبلاغ
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -274,6 +308,15 @@ export default function ChatRoomPage() {
           </button>
         </div>
       </div>
+
+      {/* Report Modal */}
+      {showReport && otherUser && (
+        <ReportModal
+          userId={otherUser._id!}
+          userName={otherUser.name}
+          onClose={() => setShowReport(false)}
+        />
+      )}
     </div>
   );
 }

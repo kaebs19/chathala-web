@@ -33,6 +33,11 @@ export function useSocket() {
       const myId = user?._id || user?.id;
       if (senderId !== myId) {
         addMessage(data.conversationId, data.message);
+        // Increment unread if not viewing this conversation
+        const { activeConversation } = useChatStore.getState();
+        if (activeConversation !== data.conversationId) {
+          useChatStore.setState((state) => ({ totalUnread: state.totalUnread + 1 }));
+        }
       }
     });
 

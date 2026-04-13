@@ -171,6 +171,14 @@ export const userAPI = {
   getProfile: (userId: string) => api(`/users/${userId}/profile`),
 };
 
+export const reportAPI = {
+  reportUser: (reportedUser: string, reason: string, description?: string) =>
+    api("/mobile/reports", {
+      method: "POST",
+      body: { reportedUser, reason, description },
+    }),
+};
+
 export const settingsAPI = {
   getPrivacyPolicy: () => api("/settings/privacy-policy"),
   getTerms: () => api("/settings/terms"),

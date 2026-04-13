@@ -68,11 +68,25 @@ export const useChatStore = create<ChatState>((set, get) => ({
   addMessage: (conversationId, message) =>
     set((state) => {
       const existing = state.messages[conversationId] || [];
+      // Update lastMessage in conversations list for real-time display
+      const conversations = state.conversations.map((c) => {
+        if (c._id === conversationId) {
+          return { ...c, lastMessage: message, updatedAt: message.createdAt };
+        }
+        return c;
+      });
+      // Re-sort: most recent first
+      conversations.sort((a, b) => {
+        const aTime = a.lastMessage?.createdAt || a.updatedAt || a.createdAt;
+        const bTime = b.lastMessage?.createdAt || b.updatedAt || b.createdAt;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      });
       return {
         messages: {
           ...state.messages,
           [conversationId]: [...existing, message],
         },
+        conversations,
       };
     }),
 
