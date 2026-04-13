@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { MessageCircle, Search } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
@@ -15,6 +15,16 @@ export default function ChatsPage() {
   const { conversations, isLoading, loadConversations } = useChatStore();
   const { user } = useAuthStore();
   const myId = user?._id || user?.id;
+  const [search, setSearch] = useState("");
+
+  const filteredConversations = useMemo(() => {
+    if (!search.trim()) return conversations;
+    const q = search.trim().toLowerCase();
+    return conversations.filter((conv) => {
+      const other = conv.participants?.find((p: User) => p._id !== myId);
+      return other?.name?.toLowerCase().includes(q);
+    });
+  }, [conversations, search, myId]);
 
   useEffect(() => {
     loadConversations();
@@ -33,6 +43,8 @@ export default function ChatsPage() {
           <input
             type="text"
             placeholder="بحث في المحادثات..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-bg-input border border-border rounded-xl pr-10 pl-4 py-2.5 text-sm text-text-primary placeholder-text-muted/50 focus:outline-none focus:border-accent-pink"
           />
         </div>
@@ -42,7 +54,7 @@ export default function ChatsPage() {
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <ChatSkeleton />
-        ) : conversations.length === 0 ? (
+        ) : filteredConversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center px-4">
             <MessageCircle size={48} className="text-text-muted/30 mb-4" />
             <h3 className="text-lg font-bold mb-2">لا توجد محادثات</h3>
@@ -57,7 +69,7 @@ export default function ChatsPage() {
             </Link>
           </div>
         ) : (
-          conversations.map((conv) => {
+          filteredConversations.map((conv) => {
             const otherUser = conv.participants?.find(
               (p: User) => p._id !== myId
             ) as User | undefined;

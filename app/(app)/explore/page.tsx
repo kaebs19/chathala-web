@@ -14,6 +14,7 @@ import Button from "@/components/ui/Button";
 import { exploreAPI } from "@/lib/api";
 import { cn, getImageUrl } from "@/lib/utils";
 import { CardSkeleton } from "@/components/ui/Skeleton";
+import { toast } from "@/components/ui/Toast";
 import type { SwipeCard, ApiResponse } from "@/types";
 
 export default function ExplorePage() {
@@ -55,9 +56,12 @@ export default function ExplorePage() {
     setSwiping(action === "superlike" ? "like" : action);
 
     try {
-      await exploreAPI.swipe(card._id, action);
+      const res = await exploreAPI.swipe(card._id, action) as { success: boolean; data?: { match?: boolean } };
+      if (res.data?.match) {
+        toast(`تطابق مع ${card.name}! 🎉`, "success", 4000);
+      }
     } catch {
-      // handle silently
+      toast("حدث خطأ", "error");
     }
 
     setTimeout(() => {
@@ -223,6 +227,20 @@ export default function ExplorePage() {
               <p className="text-white/60 text-sm line-clamp-2">
                 {currentCard.bio}
               </p>
+            )}
+            {currentCard.interests && currentCard.interests.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {currentCard.interests.slice(0, 4).map((interest) => (
+                  <span key={interest} className="px-2 py-0.5 rounded-full bg-white/15 text-white/80 text-xs">
+                    {interest}
+                  </span>
+                ))}
+                {currentCard.interests.length > 4 && (
+                  <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/50 text-xs">
+                    +{currentCard.interests.length - 4}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </div>

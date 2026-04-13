@@ -19,6 +19,7 @@ import { formatTime, getImageUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { useSocket } from "@/hooks/useSocket";
 import { getSocket, SocketEvents } from "@/lib/socket";
+import { toast } from "@/components/ui/Toast";
 import type { Message, User } from "@/types";
 
 export default function ChatRoomPage() {
@@ -32,6 +33,7 @@ export default function ChatRoomPage() {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const chatMessages = messages[conversationId] || [];
   const { joinConversation, leaveConversation, emitTyping, emitStopTyping, markRead } = useSocket();
 
@@ -140,25 +142,72 @@ export default function ChatRoomPage() {
             return (
               <div
                 key={msg._id}
-                className={cn("flex", isMine ? "justify-start" : "justify-end")}
+                className={cn("flex animate-fade-in-up", isMine ? "justify-start" : "justify-end")}
+                style={{ animationDuration: "0.2s" }}
               >
                 <div
                   className={cn(
-                    "max-w-[75%] rounded-2xl px-4 py-2.5",
+                    "max-w-[75%] rounded-2xl overflow-hidden",
+                    msg.type === "image" ? "p-1" : "px-4 py-2.5",
                     isMine
                       ? "gradient-bg text-white rounded-br-md"
                       : "bg-bg-card border border-border text-text-primary rounded-bl-md"
                   )}
                 >
-                  <p className="text-sm leading-relaxed">{msg.content}</p>
-                  <p
-                    className={cn(
-                      "text-[10px] mt-1",
-                      isMine ? "text-white/60" : "text-text-muted"
+                  {/* Reply preview */}
+                  {msg.replyTo && (
+                    <div className={cn(
+                      "text-xs px-3 py-1.5 rounded-lg mb-1.5 border-r-2",
+                      isMine ? "bg-white/10 border-white/40" : "bg-bg-hover border-accent-pink/40"
+                    )}>
+                      <p className="truncate opacity-70">{msg.replyTo.content}</p>
+                    </div>
+                  )}
+
+                  {/* Image message */}
+                  {msg.type === "image" && (msg.imageUrl || msg.content) && (
+                    <img
+                      src={getImageUrl(msg.imageUrl || msg.content)}
+                      alt="صورة"
+                      className="rounded-xl max-h-64 w-auto"
+                    />
+                  )}
+
+                  {/* Audio message */}
+                  {msg.type === "audio" && (
+                    <div className="flex items-center gap-2 min-w-[180px]">
+                      <button className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", isMine ? "bg-white/20" : "bg-accent-pink/20")}>
+                        <span className="text-xs">&#9654;</span>
+                      </button>
+                      <div className="flex-1 h-1 rounded-full bg-white/20">
+                        <div className="h-full w-1/3 rounded-full bg-white/60" />
+                      </div>
+                      {msg.audioDuration && (
+                        <span className="text-[10px] shrink-0">{Math.floor(msg.audioDuration / 60)}:{String(msg.audioDuration % 60).padStart(2, "0")}</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Text message */}
+                  {(msg.type === "text" || (!msg.type && msg.content)) && (
+                    <p className="text-sm leading-relaxed">{msg.content}</p>
+                  )}
+
+                  {/* System message */}
+                  {msg.type === "system" && (
+                    <p className="text-xs text-center opacity-60">{msg.content}</p>
+                  )}
+
+                  <div className={cn("flex items-center gap-1 mt-1", isMine ? "justify-start" : "justify-end")}>
+                    <span className={cn("text-[10px]", isMine ? "text-white/60" : "text-text-muted")}>
+                      {formatTime(msg.createdAt)}
+                    </span>
+                    {isMine && (
+                      <span className={cn("text-[10px]", msg.isRead ? "text-blue-300" : "text-white/40")}>
+                        {msg.isRead ? "✓✓" : msg.isDelivered ? "✓✓" : "✓"}
+                      </span>
                     )}
-                  >
-                    {formatTime(msg.createdAt)}
-                  </p>
+                  </div>
                 </div>
               </div>
             );
@@ -177,7 +226,13 @@ export default function ChatRoomPage() {
       {/* Input */}
       <div className="p-3 border-t border-border bg-bg-secondary">
         <div className="flex items-center gap-2">
-          <button className="p-2 text-text-muted hover:text-accent-pink rounded-xl transition-colors">
+          <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            // TODO: implement image upload via API when endpoint is ready
+            toast("إرسال الصور قريباً", "info");
+          }} />
+          <button onClick={() => imageInputRef.current?.click()} className="p-2 text-text-muted hover:text-accent-pink rounded-xl transition-colors">
             <ImageIcon size={22} />
           </button>
           <button className="p-2 text-text-muted hover:text-accent-pink rounded-xl transition-colors">

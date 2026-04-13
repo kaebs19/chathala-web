@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import {
   Edit3,
@@ -15,10 +16,36 @@ import Avatar from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { useAuthStore } from "@/stores/authStore";
+import { authAPI } from "@/lib/api";
+import { toast } from "@/components/ui/Toast";
 import { getAge, getImageUrl } from "@/lib/utils";
+import type { User } from "@/types";
 
 export default function ProfilePage() {
-  const { user } = useAuthStore();
+  const { user, setUser } = useAuthStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("profileImage", file);
+    try {
+      const res = (await authAPI.uploadProfileImage(formData)) as {
+        success: boolean;
+        data?: { user?: User } | User;
+      };
+      if (res.success && res.data) {
+        const updated = res.data && "user" in (res.data as object)
+          ? (res.data as { user: User }).user
+          : (res.data as User);
+        if (updated) setUser(updated);
+        toast("تم تحديث الصورة", "success");
+      }
+    } catch {
+      toast("فشل رفع الصورة", "error");
+    }
+  };
 
   if (!user) return null;
 
@@ -45,7 +72,17 @@ export default function ProfilePage() {
             isOnline
             isPremium={user.isPremium}
           />
-          <button className="absolute bottom-0 left-0 w-8 h-8 rounded-full gradient-bg flex items-center justify-center border-2 border-bg-card">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageUpload}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute bottom-0 left-0 w-8 h-8 rounded-full gradient-bg flex items-center justify-center border-2 border-bg-card hover:scale-110 transition-transform"
+          >
             <Camera size={14} className="text-white" />
           </button>
         </div>
