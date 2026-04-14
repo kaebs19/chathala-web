@@ -1,10 +1,43 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
+import Avatar from "@/components/ui/Avatar";
 import { MessageCircleHeart, Sparkles, ArrowLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface FeaturedUser {
+  name: string;
+  profileImage?: string;
+  country?: string;
+  isOnline?: boolean;
+  isPremium?: boolean;
+}
 
 export default function Hero() {
+  const [users, setUsers] = useState<FeaturedUser[]>([]);
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setLoggedIn(!!localStorage.getItem("token"));
+    // Fetch featured users for the showcase
+    async function loadUsers() {
+      try {
+        const res = await fetch("/api/users/featured");
+        const data = await res.json();
+        if (data.success && data.data) {
+          const list = Array.isArray(data.data) ? data.data : data.data.users || [];
+          setUsers(list.slice(0, 12));
+        }
+      } catch {
+        // Fallback placeholder users
+        setUsers([]);
+      }
+    }
+    loadUsers();
+  }, []);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Effects */}
@@ -47,12 +80,21 @@ export default function Hero() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in-up"
           style={{ animationDelay: "0.3s" }}
         >
-          <Link href="/register">
-            <Button size="lg" className="min-w-[200px] text-lg">
-              <MessageCircleHeart size={22} />
-              ابدأ الآن مجاناً
-            </Button>
-          </Link>
+          {loggedIn ? (
+            <Link href="/chats">
+              <Button size="lg" className="min-w-[200px] text-lg">
+                <MessageCircleHeart size={22} />
+                ادخل محادثاتك
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/register">
+              <Button size="lg" className="min-w-[200px] text-lg">
+                <MessageCircleHeart size={22} />
+                ابدأ الآن مجاناً
+              </Button>
+            </Link>
+          )}
           <Link href="/download">
             <Button variant="outline" size="lg" className="min-w-[200px] text-lg">
               حمّل التطبيق
@@ -80,26 +122,64 @@ export default function Hero() {
           ))}
         </div>
 
-        {/* Phone Mockup Placeholder */}
+        {/* Users Showcase — replaces phone mockup */}
         <div
           className="mt-16 animate-fade-in-up"
           style={{ animationDelay: "0.5s" }}
         >
-          <div className="relative mx-auto w-72 h-[500px] bg-bg-card rounded-[3rem] border-2 border-border p-3 shadow-2xl shadow-accent-pink/10">
-            <div className="w-full h-full bg-bg-input rounded-[2.3rem] flex items-center justify-center">
-              <div className="text-center">
-                <MessageCircleHeart
-                  size={64}
-                  className="text-accent-pink mx-auto mb-4 animate-float"
-                />
-                <p className="text-text-muted text-sm">
-                  معاينة التطبيق
-                </p>
+          {users.length > 0 ? (
+            <div className="max-w-2xl mx-auto">
+              <p className="text-sm text-text-muted mb-6">مستخدمون يتواصلون الآن</p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                {users.map((u, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 p-3 rounded-2xl border border-border/50 bg-bg-card/50 backdrop-blur-sm hover:border-accent-pink/30 hover:bg-bg-card transition-all cursor-default",
+                      i < 4 && "animate-float"
+                    )}
+                    style={{ animationDelay: `${i * 0.3}s` }}
+                  >
+                    <Avatar
+                      src={u.profileImage}
+                      name={u.name}
+                      size="lg"
+                      isOnline={u.isOnline}
+                      isPremium={u.isPremium}
+                    />
+                    <span className="text-xs font-bold truncate max-w-[80px]">{u.name}</span>
+                    {u.country && (
+                      <span className="text-[10px] text-text-muted">{u.country}</span>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
-            {/* Notch */}
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-bg-primary rounded-full" />
-          </div>
+          ) : (
+            /* Fallback — animated avatars grid */
+            <div className="max-w-md mx-auto">
+              <div className="flex items-center justify-center -space-x-3 rtl:space-x-reverse">
+                {Array.from({ length: 7 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "w-14 h-14 rounded-full gradient-bg flex items-center justify-center text-white font-bold text-lg border-3 border-bg-primary shadow-lg",
+                      i % 2 === 0 && "animate-float"
+                    )}
+                    style={{
+                      animationDelay: `${i * 0.2}s`,
+                      zIndex: 7 - i,
+                    }}
+                  >
+                    {["م", "ع", "ل", "ن", "س", "ح", "ر"][i]}
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm text-text-muted mt-4">
+                آلاف المستخدمين ينتظرونك
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </section>

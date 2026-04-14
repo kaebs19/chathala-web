@@ -11,8 +11,10 @@ import {
   Phone,
   HelpCircle,
   Smartphone,
+  MessageCircle,
 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
+import Avatar from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
@@ -27,12 +29,30 @@ const navLinks = [
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [userImage, setUserImage] = useState("");
   const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setLoggedIn(true);
+      try {
+        const cached = localStorage.getItem("user");
+        if (cached) {
+          const u = JSON.parse(cached);
+          setUserName(u.name || "");
+          setUserImage(u.profileImage || "");
+        }
+      } catch {}
+    }
   }, []);
 
   return (
@@ -70,7 +90,6 @@ export default function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3">
-            {/* App Store Badge */}
             <a
               href="https://apps.apple.com/us/app/chat-hala/id1369295351"
               target="_blank"
@@ -81,14 +100,26 @@ export default function Header() {
               <span>حمّل التطبيق</span>
             </a>
 
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                تسجيل الدخول
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm">إنشاء حساب</Button>
-            </Link>
+            {loggedIn ? (
+              <Link href="/chats" className="flex items-center gap-2">
+                <Button size="sm">
+                  <MessageCircle size={16} />
+                  محادثاتي
+                </Button>
+                <Avatar src={userImage} name={userName} size="sm" />
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    تسجيل الدخول
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button size="sm">إنشاء حساب</Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -122,7 +153,6 @@ export default function Header() {
               </Link>
             ))}
 
-            {/* App Store في الموبايل */}
             <a
               href="https://apps.apple.com/us/app/chat-hala/id1369295351"
               target="_blank"
@@ -135,14 +165,25 @@ export default function Header() {
             </a>
 
             <div className="pt-3 flex flex-col gap-2">
-              <Link href="/login" onClick={() => setIsOpen(false)}>
-                <Button variant="outline" className="w-full">
-                  تسجيل الدخول
-                </Button>
-              </Link>
-              <Link href="/register" onClick={() => setIsOpen(false)}>
-                <Button className="w-full">إنشاء حساب</Button>
-              </Link>
+              {loggedIn ? (
+                <Link href="/chats" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full">
+                    <MessageCircle size={18} />
+                    ادخل محادثاتك
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login" onClick={() => setIsOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      تسجيل الدخول
+                    </Button>
+                  </Link>
+                  <Link href="/register" onClick={() => setIsOpen(false)}>
+                    <Button className="w-full">إنشاء حساب</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
