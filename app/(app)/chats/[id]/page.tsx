@@ -124,7 +124,7 @@ export default function ChatRoomPage() {
       <div className="flex items-center gap-3 p-4 border-b border-border bg-bg-secondary">
         <button
           onClick={() => router.push("/chats")}
-          className="text-text-muted hover:text-text-primary lg:hidden"
+          className="text-text-muted hover:text-text-primary"
         >
           <ArrowRight size={22} />
         </button>

@@ -68,6 +68,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   addMessage: (conversationId, message) =>
     set((state) => {
       const existing = state.messages[conversationId] || [];
+      // Prevent duplicate messages
+      if (existing.some((m) => m._id === message._id)) return state;
       // Update lastMessage in conversations list for real-time display
       const conversations = state.conversations.map((c) => {
         if (c._id === conversationId) {
