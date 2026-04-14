@@ -19,7 +19,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useNotificationStore } from "@/stores/notificationStore";
 import { useChatStore } from "@/stores/chatStore";
 import { useSocket } from "@/hooks/useSocket";
-import { disconnectSocket } from "@/lib/socket";
+import { disconnectSocket, getSocket } from "@/lib/socket";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -38,6 +38,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { totalUnread: chatUnread, loadConversations, reset: resetChat } = useChatStore();
   useSocket();
   const [ready, setReady] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
+
+  // Track socket connection status
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const s = getSocket();
+      setSocketConnected(!!s?.connected);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -71,9 +81,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <aside className="hidden lg:flex flex-col w-64 bg-bg-secondary border-l border-border fixed right-0 top-0 bottom-0 z-40">
         {/* Logo */}
         <div className="p-5 border-b border-border">
-          <Link href="/chats">
-            <Logo />
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link href="/chats">
+              <Logo />
+            </Link>
+            <div className={cn("w-2 h-2 rounded-full", socketConnected ? "bg-success" : "bg-error animate-pulse")} title={socketConnected ? "متصل" : "غير متصل"} />
+          </div>
         </div>
 
         {/* User Info */}

@@ -80,7 +80,24 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
-  setActiveConversation: (id) => set({ activeConversation: id }),
+  setActiveConversation: (id) => {
+    if (!id) {
+      set({ activeConversation: null });
+      return;
+    }
+    // Mark conversation as read locally
+    set((state) => {
+      const conv = state.conversations.find((c) => c._id === id);
+      const unreadToRemove = conv?.unreadCount || 0;
+      return {
+        activeConversation: id,
+        totalUnread: Math.max(0, state.totalUnread - unreadToRemove),
+        conversations: state.conversations.map((c) =>
+          c._id === id ? { ...c, unreadCount: 0 } : c
+        ),
+      };
+    });
+  },
 
   addMessage: (conversationId, message) =>
     set((state) => {

@@ -6,9 +6,14 @@ const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL || "https://matchhala.chathala.com";
 
 let socket: Socket | null = null;
+let connectionStatus: "disconnected" | "connecting" | "connected" = "disconnected";
 
 export function getSocket(): Socket | null {
   return socket;
+}
+
+export function getSocketStatus(): string {
+  return connectionStatus;
 }
 
 export function connectSocket(token: string): Socket {
@@ -20,6 +25,8 @@ export function connectSocket(token: string): Socket {
     socket.disconnect();
   }
 
+  connectionStatus = "connecting";
+
   socket = io(SOCKET_URL, {
     auth: { token },
     transports: ["websocket", "polling"],
@@ -30,6 +37,9 @@ export function connectSocket(token: string): Socket {
     timeout: 15000,
     forceNew: false,
   });
+
+  socket.on("connect", () => { connectionStatus = "connected"; });
+  socket.on("disconnect", () => { connectionStatus = "disconnected"; });
 
   return socket;
 }
