@@ -4,6 +4,11 @@ import { create } from "zustand";
 import type { Conversation, Message } from "@/types";
 import { chatAPI } from "@/lib/api";
 
+// Debounce helper for loadConversations
+let loadDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+let lastLoadTime = 0;
+const LOAD_COOLDOWN = 2000; // 2s min between API calls
+
 interface ChatState {
   conversations: Conversation[];
   messages: Record<string, Message[]>;
@@ -27,9 +32,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
   totalUnread: 0,
 
   loadConversations: async () => {
-    set({ isLoading: true });
+    // Debounce: skip if called within cooldown
+    const now = Date.now();
+    if (now - lastLoadTime < LOAD_COOLDOWN) {
+      // Schedule a delayed load instead
+      if (loadDebounceTimer) clearTimeout(loadDebounceTimer);
+      loadDebounceTimer = setTimeout(() => {
+        get().loadConversations();
+      }, LOAD_COOLDOWN);
+      return;
+    }
+    lastLoadTime = now;
+
+    const isFirst = get().conversations.length === 0;
+    if (isFirst) set({ isLoading: true });
+
     try {
-      // Server: { success, data: { conversations: [...], totalUnread } }
       const res = (await chatAPI.getConversations()) as {
         success: boolean;
         data?: { conversations?: Conversation[]; totalUnread?: number } | Conversation[];
@@ -41,13 +59,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
         set({ conversations: convos, totalUnread });
       }
     } finally {
-      set({ isLoading: false });
+      if (isFirst) set({ isLoading: false });
     }
   },
 
   loadMessages: async (conversationId) => {
     try {
-      // Server: { success, data: { messages: [...] } }
       const res = (await chatAPI.getMessages(conversationId)) as {
         success: boolean;
         data?: { messages?: Message[] } | Message[];
@@ -59,7 +76,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }));
       }
     } catch {
-      // handle silently
+      // silent
     }
   },
 
@@ -68,26 +85,33 @@ export const useChatStore = create<ChatState>((set, get) => ({
   addMessage: (conversationId, message) =>
     set((state) => {
       const existing = state.messages[conversationId] || [];
-      // Prevent duplicate messages
+      // Prevent duplicates
       if (existing.some((m) => m._id === message._id)) return state;
-      // Update lastMessage in conversations list for real-time display
+
+      // Update lastMessage in conversations
+      let found = false;
       const conversations = state.conversations.map((c) => {
         if (c._id === conversationId) {
+          found = true;
           return { ...c, lastMessage: message, updatedAt: message.createdAt };
         }
         return c;
       });
-      // Re-sort: most recent first
+
+      // Sort: most recent first
       conversations.sort((a, b) => {
-        const aTime = a.lastMessage?.createdAt || a.updatedAt || a.createdAt;
-        const bTime = b.lastMessage?.createdAt || b.updatedAt || b.createdAt;
-        return new Date(bTime).getTime() - new Date(aTime).getTime();
+        const aT = a.lastMessage?.createdAt || a.updatedAt || a.createdAt;
+        const bT = b.lastMessage?.createdAt || b.updatedAt || b.createdAt;
+        return new Date(bT).getTime() - new Date(aT).getTime();
       });
+
+      // If conversation not found, reload list
+      if (!found) {
+        setTimeout(() => get().loadConversations(), 100);
+      }
+
       return {
-        messages: {
-          ...state.messages,
-          [conversationId]: [...existing, message],
-        },
+        messages: { ...state.messages, [conversationId]: [...existing, message] },
         conversations,
       };
     }),
@@ -99,5 +123,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       ),
     })),
 
-  reset: () => set({ conversations: [], messages: {}, activeConversation: null, isLoading: false, totalUnread: 0 }),
+  reset: () => {
+    if (loadDebounceTimer) clearTimeout(loadDebounceTimer);
+    lastLoadTime = 0;
+    set({ conversations: [], messages: {}, activeConversation: null, isLoading: false, totalUnread: 0 });
+  },
 }));

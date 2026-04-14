@@ -27,7 +27,8 @@ export interface User {
 
 export interface Message {
   _id: string;
-  conversationId: string;
+  conversationId?: string;
+  conversation?: string | { _id: string };
   sender: string | User;
   content: string;
   type: "text" | "image" | "audio" | "video" | "file" | "system";

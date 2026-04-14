@@ -14,20 +14,21 @@ export function getSocket(): Socket | null {
 export function connectSocket(token: string): Socket {
   if (socket?.connected) return socket;
 
+  // Disconnect stale socket if exists
+  if (socket) {
+    socket.removeAllListeners();
+    socket.disconnect();
+  }
+
   socket = io(SOCKET_URL, {
     auth: { token },
     transports: ["websocket", "polling"],
     reconnection: true,
     reconnectionDelay: 1000,
-    reconnectionAttempts: 10,
-  });
-
-  socket.on("connect", () => {
-    console.log("Socket connected");
-  });
-
-  socket.on("disconnect", (reason) => {
-    console.log("Socket disconnected:", reason);
+    reconnectionDelayMax: 10000,
+    reconnectionAttempts: Infinity,
+    timeout: 15000,
+    forceNew: false,
   });
 
   return socket;
@@ -35,6 +36,7 @@ export function connectSocket(token: string): Socket {
 
 export function disconnectSocket() {
   if (socket) {
+    socket.removeAllListeners();
     socket.disconnect();
     socket = null;
   }

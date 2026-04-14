@@ -108,14 +108,26 @@ export default function ChatRoomPage() {
   const handleSend = async () => {
     if (!text.trim() || sending) return;
     const content = text.trim();
+    const myId = user?._id || user?.id || "";
     setSending(true);
     setText("");
+
+    // Optimistic: show message instantly
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMsg: Message = {
+      _id: tempId,
+      conversationId,
+      sender: { _id: myId, name: user?.name || "" } as never,
+      content,
+      type: "text",
+      createdAt: new Date().toISOString(),
+      isDelivered: false,
+      isRead: false,
+    };
+    addMessage(conversationId, optimisticMsg);
+
     try {
-      // Server: { success, data: { message: {...} }, message?: string, warning?: {...} }
-      const res = (await chatAPI.sendMessage(
-        conversationId,
-        content
-      )) as {
+      const res = (await chatAPI.sendMessage(conversationId, content)) as {
         success: boolean;
         data?: { message?: Message } | Message;
         message?: string;
@@ -126,16 +138,44 @@ export default function ChatRoomPage() {
           ? (res.data as { message: Message }).message
           : (res.data as Message);
         if (msg) {
-          addMessage(conversationId, msg);
+          // Replace optimistic with real message
+          useChatStore.setState((s) => {
+            const msgs = (s.messages[conversationId] || []).map((m) =>
+              m._id === tempId ? msg : m
+            );
+            // Update lastMessage in conversations
+            const conversations = s.conversations.map((c) =>
+              c._id === conversationId ? { ...c, lastMessage: msg, updatedAt: msg.createdAt } : c
+            );
+            conversations.sort((a, b) => {
+              const aT = a.lastMessage?.createdAt || a.updatedAt || a.createdAt;
+              const bT = b.lastMessage?.createdAt || b.updatedAt || b.createdAt;
+              return new Date(bT).getTime() - new Date(aT).getTime();
+            });
+            return { messages: { ...s.messages, [conversationId]: msgs }, conversations };
+          });
         }
         if (res.warning) {
           toast(res.warning.message, "error", 5000);
         }
       } else {
+        // Remove optimistic message on failure
+        useChatStore.setState((s) => ({
+          messages: {
+            ...s.messages,
+            [conversationId]: (s.messages[conversationId] || []).filter((m) => m._id !== tempId),
+          },
+        }));
         setText(content);
         toast(res.message || "فشل إرسال الرسالة", "error");
       }
     } catch {
+      useChatStore.setState((s) => ({
+        messages: {
+          ...s.messages,
+          [conversationId]: (s.messages[conversationId] || []).filter((m) => m._id !== tempId),
+        },
+      }));
       setText(content);
       toast("حدث خطأ في الاتصال", "error");
     } finally {
