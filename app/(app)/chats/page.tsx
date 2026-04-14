@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { MessageCircle, Search, Check, X, UserPlus } from "lucide-react";
+import { MessageCircle, Search, Check, X, UserPlus, ChevronDown, ChevronUp } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import { useChatStore } from "@/stores/chatStore";
 import { useAuthStore } from "@/stores/authStore";
@@ -19,6 +19,7 @@ export default function ChatsPage() {
   const myId = user?._id || user?.id;
   const [search, setSearch] = useState("");
   const [respondingTo, setRespondingTo] = useState<string | null>(null);
+  const [showRequests, setShowRequests] = useState(false);
 
   // Split conversations into accepted and pending requests
   const { accepted, pending } = useMemo(() => {
@@ -119,13 +120,23 @@ export default function ChatsPage() {
             {/* Pending Requests */}
             {pending.length > 0 && (
               <div className="border-b border-border">
-                <div className="flex items-center gap-2 px-4 py-3 bg-accent-pink/5">
-                  <UserPlus size={16} className="text-accent-pink" />
-                  <span className="text-sm font-bold text-accent-pink">
-                    طلبات محادثة ({pending.length})
-                  </span>
-                </div>
-                {pending.map((conv) => {
+                <button
+                  onClick={() => setShowRequests(!showRequests)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-accent-pink/5 hover:bg-accent-pink/10 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <UserPlus size={16} className="text-accent-pink" />
+                    <span className="text-sm font-bold text-accent-pink">
+                      طلبات محادثة ({pending.length})
+                    </span>
+                  </div>
+                  {showRequests ? (
+                    <ChevronUp size={18} className="text-accent-pink" />
+                  ) : (
+                    <ChevronDown size={18} className="text-accent-pink" />
+                  )}
+                </button>
+                {showRequests && pending.map((conv) => {
                   const otherUser = conv.participants?.find(
                     (p: User) => p._id !== myId
                   ) as User | undefined;
