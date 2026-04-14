@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Heart,
@@ -302,50 +303,83 @@ export default function ExplorePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
           {/* Info */}
-          <div className="absolute bottom-0 left-0 right-0 p-6">
-            <div className="flex items-center gap-2 mb-2">
-              <h2 className="text-2xl font-black text-white">
-                {currentCard.name}
-              </h2>
-              {currentCard.age && (
-                <span className="text-xl text-white/80">
-                  {currentCard.age}
-                </span>
-              )}
+          <div className="absolute bottom-0 left-0 right-0 p-5 pb-6">
+            {/* Name + age + badges */}
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <h2 className="text-3xl font-black text-white">{currentCard.name}</h2>
+              {currentCard.age && <span className="text-2xl text-white/80 font-bold">{currentCard.age}</span>}
               {currentCard.isVerified && (
-                <span className="bg-accent-pink/20 text-accent-pink text-xs px-2 py-0.5 rounded-full">
+                <span className="bg-accent-pink text-white text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                  <CheckCircle2 size={11} />
                   موثّق
                 </span>
               )}
+              {currentCard.isPremium && (
+                <span className="bg-warning text-bg-primary text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                  <Crown size={11} />
+                  Premium
+                </span>
+              )}
+              {currentCard.isOnline && (
+                <span className="flex items-center gap-1 bg-success/20 border border-success/40 text-success text-[10px] px-2 py-0.5 rounded-full font-bold backdrop-blur-sm">
+                  <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
+                  متصل
+                </span>
+              )}
             </div>
-            {currentCard.country && (
-              <div className="flex items-center gap-1 text-white/70 text-sm mb-2">
-                <MapPin size={14} />
-                <span>{currentCard.country}</span>
-                {currentCard.distance && (
-                  <span>· {currentCard.distance} كم</span>
-                )}
-              </div>
-            )}
+
+            {/* Location info */}
+            <div className="flex items-center flex-wrap gap-2 text-white/80 text-sm mb-3">
+              {currentCard.country && (
+                <span className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                  <MapPin size={12} />
+                  <span>{currentCard.country}</span>
+                  {currentCard.city && <span className="text-white/60">· {currentCard.city}</span>}
+                </span>
+              )}
+              {currentCard.distance !== undefined && currentCard.distance !== null && (
+                <span className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                  <MapPin size={12} />
+                  {currentCard.distance} كم
+                </span>
+              )}
+              {currentCard.gender && (
+                <span className="bg-black/40 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs">
+                  {currentCard.gender === "male" ? "♂ ذكر" : "♀ أنثى"}
+                </span>
+              )}
+            </div>
+
+            {/* Bio */}
             {currentCard.bio && (
-              <p className="text-white/60 text-sm line-clamp-2">
+              <p className="text-white/90 text-sm leading-relaxed mb-3 line-clamp-3">
                 {currentCard.bio}
               </p>
             )}
+
+            {/* Interests */}
             {currentCard.interests && currentCard.interests.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {currentCard.interests.slice(0, 4).map((interest) => (
-                  <span key={interest} className="px-2 py-0.5 rounded-full bg-white/15 text-white/80 text-xs">
+              <div className="flex flex-wrap gap-1.5">
+                {currentCard.interests.slice(0, 5).map((interest) => (
+                  <span key={interest} className="px-2.5 py-1 rounded-full bg-accent-pink/80 backdrop-blur-sm text-white text-xs font-medium">
                     {interest}
                   </span>
                 ))}
-                {currentCard.interests.length > 4 && (
-                  <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/50 text-xs">
-                    +{currentCard.interests.length - 4}
+                {currentCard.interests.length > 5 && (
+                  <span className="px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs">
+                    +{currentCard.interests.length - 5}
                   </span>
                 )}
               </div>
             )}
+
+            {/* View full profile link */}
+            <Link
+              href={`/profile/${currentCard._id}`}
+              className="mt-3 inline-flex items-center gap-1 text-xs text-white/70 hover:text-white underline underline-offset-2"
+            >
+              عرض الملف الكامل ←
+            </Link>
           </div>
         </div>
       </div>

@@ -12,6 +12,7 @@ import {
   Settings,
   Crown,
   LogOut,
+  UserPlus,
 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
 import Avatar from "@/components/ui/Avatar";
@@ -23,10 +24,11 @@ import { disconnectSocket } from "@/lib/socket";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/chats", icon: MessageCircle, label: "المحادثات", badgeKey: "chats" as const },
   { href: "/explore", icon: Compass, label: "اكتشاف" },
-  { href: "/matches", icon: Heart, label: "مطابقات" },
+  { href: "/chats", icon: MessageCircle, label: "المحادثات", badgeKey: "chats" as const },
+  { href: "/requests", icon: UserPlus, label: "الطلبات", badgeKey: "requests" as const },
   { href: "/notifications", icon: Bell, label: "إشعارات", badgeKey: "notifications" as const },
+  { href: "/matches", icon: Heart, label: "مطابقات" },
   { href: "/profile", icon: User, label: "بروفايلي" },
 ];
 
@@ -35,7 +37,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, isAuthenticated, isLoading, loadUser, logout } = useAuthStore();
   const { unreadCount, loadNotifications, reset: resetNotifications } = useNotificationStore();
-  const { totalUnread: chatUnread, loadConversations, reset: resetChat } = useChatStore();
+  const { conversations, totalUnread: chatUnread, loadConversations, reset: resetChat } = useChatStore();
+  const myId = user?._id || user?.id;
+
+  // Count pending requests (from others, not mine)
+  const requestsCount = conversations.filter((c) => c.status === "pending" && c.creator !== myId).length;
   const { connected: socketConnected } = useSocket();
   const [ready, setReady] = useState(false);
 
@@ -121,7 +127,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <item.icon size={20} />
                 <span>{item.label}</span>
                 {(() => {
-                  const count = item.badgeKey === "notifications" ? unreadCount : item.badgeKey === "chats" ? chatUnread : 0;
+                  const count =
+                    item.badgeKey === "notifications" ? unreadCount :
+                    item.badgeKey === "chats" ? chatUnread :
+                    item.badgeKey === "requests" ? requestsCount : 0;
                   return count > 0 ? (
                     <span className="mr-auto bg-error text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                       {count > 9 ? "9+" : count}
@@ -194,7 +203,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <item.icon size={22} />
                 <span className="text-[10px] font-medium">{item.label}</span>
                 {(() => {
-                  const count = item.badgeKey === "notifications" ? unreadCount : item.badgeKey === "chats" ? chatUnread : 0;
+                  const count =
+                    item.badgeKey === "notifications" ? unreadCount :
+                    item.badgeKey === "chats" ? chatUnread :
+                    item.badgeKey === "requests" ? requestsCount : 0;
                   return count > 0 ? (
                     <span className="absolute -top-0.5 right-1 bg-error text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                       {count > 9 ? "+" : count}
