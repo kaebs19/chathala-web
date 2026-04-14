@@ -57,6 +57,7 @@ interface ChatState {
   setActiveConversation: (id: string | null) => void;
   addMessage: (conversationId: string, message: Message) => void;
   updateConversation: (conversation: Conversation) => void;
+  markConversationRead: (conversationId: string) => Promise<void>;
   reset: () => void;
 }
 
@@ -95,14 +96,54 @@ export const useChatStore = create<ChatState>((set, get) => ({
         data?: { conversations?: Conversation[]; totalUnread?: number } | Conversation[];
       };
       if (res.success && res.data) {
-        const convos = Array.isArray(res.data) ? res.data : res.data.conversations || [];
-        const serverUnread = !Array.isArray(res.data) ? res.data.totalUnread : undefined;
-        const totalUnread = serverUnread ?? convos.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+        const serverConvos = Array.isArray(res.data) ? res.data : res.data.conversations || [];
+
+        // Preserve local unread state — if we marked a conversation as read locally,
+        // don't overwrite with stale server data
+        const current = get().conversations;
+        const currentMap = new Map(current.map(c => [c._id, c]));
+        const activeId = get().activeConversation;
+
+        const convos = serverConvos.map((c) => {
+          const local = currentMap.get(c._id);
+          // If locally we set unreadCount to 0 (after opening), keep it
+          if (local && local.unreadCount === 0 && (c.unreadCount || 0) > 0) {
+            return { ...c, unreadCount: 0 };
+          }
+          // If this is the active conversation, force unread to 0
+          if (c._id === activeId) {
+            return { ...c, unreadCount: 0 };
+          }
+          return c;
+        });
+
+        const totalUnread = convos.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
         set({ conversations: convos, totalUnread });
         saveCache(convos);
       }
     } finally {
       if (isFirst) set({ isLoading: false });
+    }
+  },
+
+  markConversationRead: async (conversationId: string) => {
+    // Update local state immediately
+    set((state) => {
+      const conv = state.conversations.find((c) => c._id === conversationId);
+      const unreadToRemove = conv?.unreadCount || 0;
+      if (unreadToRemove === 0) return state;
+      return {
+        totalUnread: Math.max(0, state.totalUnread - unreadToRemove),
+        conversations: state.conversations.map((c) =>
+          c._id === conversationId ? { ...c, unreadCount: 0 } : c
+        ),
+      };
+    });
+    // Persist on server
+    try {
+      await chatAPI.markAsRead(conversationId);
+    } catch {
+      // silent — socket will also try
     }
   },
 

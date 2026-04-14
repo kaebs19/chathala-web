@@ -143,6 +143,8 @@ export const chatAPI = {
     api(`/v2/mobile/conversations/${conversationId}/reject`, { method: "PUT" }),
   deleteConversation: (conversationId: string) =>
     api(`/v2/mobile/conversations/${conversationId}`, { method: "DELETE" }),
+  markAsRead: (conversationId: string) =>
+    api(`/mobile/conversations/${conversationId}/read`, { method: "PUT" }),
 };
 
 export const exploreAPI = {

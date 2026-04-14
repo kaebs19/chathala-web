@@ -31,7 +31,7 @@ export default function ChatRoomPage() {
   const router = useRouter();
   const conversationId = params.id as string;
   const { user } = useAuthStore();
-  const { messages, conversations, loadMessages, loadConversations, addMessage, setActiveConversation } = useChatStore();
+  const { messages, conversations, loadMessages, loadConversations, addMessage, setActiveConversation, markConversationRead } = useChatStore();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
@@ -79,6 +79,7 @@ export default function ChatRoomPage() {
       loadMessages(conversationId);
       joinConversation(conversationId);
       markRead(conversationId);
+      markConversationRead(conversationId); // REST — persistent
       setActiveConversation(conversationId);
       if (conversations.length === 0) loadConversations();
 
