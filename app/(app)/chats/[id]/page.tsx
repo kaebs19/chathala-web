@@ -12,6 +12,7 @@ import {
   Phone,
   Flag,
   User as UserIcon,
+  ChevronDown,
 } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import { useChatStore } from "@/stores/chatStore";
@@ -41,6 +42,30 @@ export default function ChatRoomPage() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const chatMessages = messages[conversationId] || [];
   const { joinConversation, leaveConversation, emitTyping, emitStopTyping, markRead } = useSocket();
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setShowScrollBtn(distanceFromBottom > 200);
+  };
+
+  // Group messages by date
+  const getDateLabel = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return "اليوم";
+    if (d.toDateString() === yesterday.toDateString()) return "أمس";
+    return d.toLocaleDateString("ar-SA", { day: "numeric", month: "long" });
+  };
 
   const otherUser = useMemo(() => {
     const conv = conversations.find((c) => c._id === conversationId);
@@ -177,19 +202,22 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 space-y-3 relative">
         {chatMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-text-muted text-sm">
             ابدأ المحادثة بإرسال رسالة...
           </div>
         ) : (
-          chatMessages.map((msg) => {
+          chatMessages.map((msg, idx) => {
+            // Date separator
+            const prevMsg = idx > 0 ? chatMessages[idx - 1] : null;
+            const showDate = !prevMsg || new Date(msg.createdAt).toDateString() !== new Date(prevMsg.createdAt).toDateString();
+
             const senderId =
               typeof msg.sender === "string" ? msg.sender : msg.sender?._id;
             const isMine = senderId === (user?._id || user?.id);
-            return (
+            const msgBubble = (
               <div
-                key={msg._id}
                 className={cn("flex animate-fade-in-up", isMine ? "justify-end" : "justify-start")}
                 style={{ animationDuration: "0.2s" }}
               >
@@ -259,9 +287,32 @@ export default function ChatRoomPage() {
                 </div>
               </div>
             );
+
+            return (
+              <div key={msg._id}>
+                {showDate && (
+                  <div className="flex items-center justify-center my-4">
+                    <div className="px-4 py-1.5 rounded-full bg-bg-card/80 border border-border/50 text-xs text-text-muted backdrop-blur-sm">
+                      {getDateLabel(msg.createdAt)}
+                    </div>
+                  </div>
+                )}
+                {msgBubble}
+              </div>
+            );
           })
         )}
         <div ref={messagesEndRef} />
+
+        {/* Scroll to bottom */}
+        {showScrollBtn && (
+          <button
+            onClick={scrollToBottom}
+            className="sticky bottom-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-accent-pink/80 text-white flex items-center justify-center shadow-lg hover:bg-accent-pink transition-colors z-10"
+          >
+            <ChevronDown size={20} />
+          </button>
+        )}
       </div>
 
       {/* Typing Indicator */}
