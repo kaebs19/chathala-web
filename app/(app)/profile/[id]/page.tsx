@@ -55,7 +55,11 @@ export default function UserProfilePage() {
         setIsLoading(false);
       }
     }
-    if (userId) loadProfile();
+    if (userId) {
+      loadProfile();
+      // Record visit (fire and forget)
+      userAPI.recordVisit(userId).catch(() => {});
+    }
   }, [userId]);
 
   const handleLike = async () => {

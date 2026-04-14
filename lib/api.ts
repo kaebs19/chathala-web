@@ -171,6 +171,8 @@ export const matchAPI = {
 
 export const userAPI = {
   getProfile: (userId: string) => api(`/users/${userId}/profile`),
+  getVisitors: (page = 1) => api(`/mobile/profile-views?page=${page}`),
+  recordVisit: (userId: string) => api(`/mobile/profile-views`, { method: "POST", body: { viewed: userId } }),
 };
 
 export const reportAPI = {

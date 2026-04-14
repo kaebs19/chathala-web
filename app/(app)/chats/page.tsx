@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { MessageCircle, Search, Check, X, UserPlus, ChevronDown, ChevronUp } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { MessageCircle, Search, Check, X, UserPlus, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import { useChatStore } from "@/stores/chatStore";
 import { useAuthStore } from "@/stores/authStore";
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { ChatSkeleton } from "@/components/ui/Skeleton";
 
 export default function ChatsPage() {
+  const router = useRouter();
   const { conversations, isLoading, loadConversations } = useChatStore();
   const { user } = useAuthStore();
   const myId = user?._id || user?.id;
@@ -66,6 +68,22 @@ export default function ChatsPage() {
         loadConversations();
       } else {
         toast(res.message || "فشل القبول", "error");
+      }
+    } catch {
+      toast("حدث خطأ", "error");
+    } finally {
+      setRespondingTo(null);
+    }
+  };
+
+  const handleAcceptAndOpen = async (convId: string) => {
+    setRespondingTo(convId);
+    try {
+      const res = (await chatAPI.acceptRequest(convId)) as { success: boolean };
+      if (res.success) {
+        router.push(`/chats/${convId}`);
+      } else {
+        toast("فشل القبول", "error");
       }
     } catch {
       toast("حدث خطأ", "error");
@@ -141,46 +159,77 @@ export default function ChatsPage() {
                     (p: User) => p._id !== myId
                   ) as User | undefined;
                   const isResponding = respondingTo === conv._id;
+                  const initialMsg = conv.lastMessage?.content;
+                  const msgTime = conv.lastMessage?.createdAt || conv.createdAt;
                   return (
                     <div
                       key={conv._id}
-                      className="flex items-center gap-3 p-4 border-b border-border/50 bg-accent-pink/[0.02]"
+                      className="p-4 border-b border-border/50 bg-accent-pink/[0.02] hover:bg-accent-pink/[0.04] transition-colors"
                     >
-                      <Link href={`/profile/${otherUser?._id}`}>
-                        <Avatar
-                          src={otherUser?.profileImage}
-                          name={otherUser?.name || "مستخدم"}
-                          size="md"
-                          isOnline={otherUser?.isOnline}
-                          isPremium={otherUser?.isPremium}
-                        />
-                      </Link>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-sm truncate">
-                          {otherUser?.name || "مستخدم"}
-                        </h3>
-                        <p className="text-xs text-text-muted">
-                          {conv.lastMessage
-                            ? truncate(conv.lastMessage.content || "طلب محادثة", 30)
-                            : "يريد التحدث معك"}
-                        </p>
+                      {/* Top: user + time */}
+                      <div className="flex items-center gap-3 mb-3">
+                        <Link href={`/profile/${otherUser?._id}`}>
+                          <Avatar
+                            src={otherUser?.profileImage}
+                            name={otherUser?.name || "مستخدم"}
+                            size="md"
+                            isOnline={otherUser?.isOnline}
+                            isPremium={otherUser?.isPremium}
+                          />
+                        </Link>
+                        <div className="flex-1 min-w-0">
+                          <Link href={`/profile/${otherUser?._id}`}>
+                            <h3 className="font-bold text-sm truncate flex items-center gap-1.5">
+                              {otherUser?.name || "مستخدم"}
+                              {otherUser?.isVerified && (
+                                <span className="text-accent-pink" title="موثّق">✓</span>
+                              )}
+                            </h3>
+                          </Link>
+                          <div className="flex items-center gap-2 text-xs text-text-muted">
+                            {otherUser?.country && <span>{otherUser.country}</span>}
+                            {msgTime && (
+                              <span className="flex items-center gap-1">
+                                <Clock size={10} />
+                                {formatDate(msgTime)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
+
+                      {/* Initial message preview */}
+                      {initialMsg && (
+                        <div className="mr-14 mb-3 p-3 bg-bg-card border-r-2 border-accent-pink/40 rounded-lg">
+                          <p className="text-sm leading-relaxed">{truncate(initialMsg, 140)}</p>
+                        </div>
+                      )}
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 mr-14">
+                        <button
+                          onClick={() => handleAcceptAndOpen(conv._id)}
+                          disabled={isResponding}
+                          className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl gradient-bg text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md shadow-accent-pink/20"
+                        >
+                          <MessageCircle size={16} />
+                          قبول وفتح الدردشة
+                        </button>
                         <button
                           onClick={() => handleAccept(conv._id)}
                           disabled={isResponding}
-                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-success/10 text-success text-sm font-bold hover:bg-success/20 transition-colors disabled:opacity-50"
+                          className="flex items-center justify-center px-3 py-2.5 rounded-xl bg-success/10 text-success hover:bg-success/20 transition-colors disabled:opacity-50"
+                          title="قبول فقط"
                         >
                           <Check size={16} />
-                          قبول
                         </button>
                         <button
                           onClick={() => handleReject(conv._id)}
                           disabled={isResponding}
-                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-error/10 text-error text-sm font-bold hover:bg-error/20 transition-colors disabled:opacity-50"
+                          className="flex items-center justify-center px-3 py-2.5 rounded-xl bg-error/10 text-error hover:bg-error/20 transition-colors disabled:opacity-50"
+                          title="رفض"
                         >
                           <X size={16} />
-                          رفض
                         </button>
                       </div>
                     </div>

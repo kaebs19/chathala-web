@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   Trash2,
   AlertTriangle,
+  Eye,
 } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import { useAuthStore } from "@/stores/authStore";
@@ -29,6 +30,7 @@ const settingsGroups = [
     title: "الحساب",
     items: [
       { href: "/profile/edit", icon: User, label: "تعديل الملف الشخصي" },
+      { href: "/visitors", icon: Eye, label: "من زار ملفك" },
       { href: "/settings/privacy", icon: Shield, label: "الخصوصية والأمان" },
       { href: "/settings/notifications", icon: Bell, label: "الإشعارات" },
       { href: "/premium", icon: Crown, label: "الاشتراك المميز", accent: true },
