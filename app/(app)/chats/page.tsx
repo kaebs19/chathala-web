@@ -169,16 +169,18 @@ export default function ChatsPage() {
                         <button
                           onClick={() => handleAccept(conv._id)}
                           disabled={isResponding}
-                          className="w-9 h-9 rounded-full bg-success/10 flex items-center justify-center text-success hover:bg-success/20 transition-colors disabled:opacity-50"
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-success/10 text-success text-sm font-bold hover:bg-success/20 transition-colors disabled:opacity-50"
                         >
-                          <Check size={18} />
+                          <Check size={16} />
+                          قبول
                         </button>
                         <button
                           onClick={() => handleReject(conv._id)}
                           disabled={isResponding}
-                          className="w-9 h-9 rounded-full bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-colors disabled:opacity-50"
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-error/10 text-error text-sm font-bold hover:bg-error/20 transition-colors disabled:opacity-50"
                         >
-                          <X size={18} />
+                          <X size={16} />
+                          رفض
                         </button>
                       </div>
                     </div>

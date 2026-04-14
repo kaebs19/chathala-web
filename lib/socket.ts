@@ -6,26 +6,27 @@ const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL || "https://matchhala.chathala.com";
 
 let socket: Socket | null = null;
-let connectionStatus: "disconnected" | "connecting" | "connected" = "disconnected";
 
 export function getSocket(): Socket | null {
   return socket;
 }
 
-export function getSocketStatus(): string {
-  return connectionStatus;
+export function isConnected(): boolean {
+  return socket?.connected ?? false;
 }
 
 export function connectSocket(token: string): Socket {
+  // Already connected with same token — reuse
   if (socket?.connected) return socket;
 
-  // Disconnect stale socket if exists
+  // Clean up stale socket
   if (socket) {
     socket.removeAllListeners();
     socket.disconnect();
+    socket = null;
   }
 
-  connectionStatus = "connecting";
+  console.log("[Socket] Connecting to", SOCKET_URL);
 
   socket = io(SOCKET_URL, {
     auth: { token },
@@ -34,12 +35,8 @@ export function connectSocket(token: string): Socket {
     reconnectionDelay: 1000,
     reconnectionDelayMax: 10000,
     reconnectionAttempts: Infinity,
-    timeout: 15000,
-    forceNew: false,
+    timeout: 20000,
   });
-
-  socket.on("connect", () => { connectionStatus = "connected"; });
-  socket.on("disconnect", () => { connectionStatus = "disconnected"; });
 
   return socket;
 }
@@ -53,7 +50,6 @@ export function disconnectSocket() {
 }
 
 export const SocketEvents = {
-  // Client → Server
   JOIN_CONVERSATION: "join-conversation",
   LEAVE_CONVERSATION: "leave-conversation",
   TYPING: "typing",
@@ -62,8 +58,6 @@ export const SocketEvents = {
   MESSAGE_DELIVERED: "message-delivered",
   SEND_MESSAGE: "send-message",
   GET_ONLINE_USERS: "get-online-users",
-
-  // Server → Client
   AUTHENTICATED: "authenticated",
   NEW_MESSAGE: "new-message",
   USER_TYPING: "user-typing",

@@ -19,7 +19,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useNotificationStore } from "@/stores/notificationStore";
 import { useChatStore } from "@/stores/chatStore";
 import { useSocket } from "@/hooks/useSocket";
-import { disconnectSocket, getSocket } from "@/lib/socket";
+import { disconnectSocket } from "@/lib/socket";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -36,18 +36,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading, loadUser, logout } = useAuthStore();
   const { unreadCount, loadNotifications, reset: resetNotifications } = useNotificationStore();
   const { totalUnread: chatUnread, loadConversations, reset: resetChat } = useChatStore();
-  useSocket();
+  const { connected: socketConnected } = useSocket();
   const [ready, setReady] = useState(false);
-  const [socketConnected, setSocketConnected] = useState(false);
-
-  // Track socket connection status
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const s = getSocket();
-      setSocketConnected(!!s?.connected);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");

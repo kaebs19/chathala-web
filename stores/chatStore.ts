@@ -4,10 +4,46 @@ import { create } from "zustand";
 import type { Conversation, Message } from "@/types";
 import { chatAPI } from "@/lib/api";
 
-// Debounce helper for loadConversations
+// Debounce helper
 let loadDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 let lastLoadTime = 0;
-const LOAD_COOLDOWN = 2000; // 2s min between API calls
+const LOAD_COOLDOWN = 2000;
+
+// localStorage cache helpers
+const CACHE_KEY = "chat_cache";
+const CACHE_TTL = 5 * 60 * 1000; // 5 min
+
+function saveCache(conversations: Conversation[]) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), d: conversations }));
+  } catch {}
+}
+
+function loadCache(): Conversation[] | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { t, d } = JSON.parse(raw);
+    if (Date.now() - t > CACHE_TTL) return null;
+    return d;
+  } catch { return null; }
+}
+
+function saveMsgCache(convId: string, msgs: Message[]) {
+  try {
+    localStorage.setItem(`msgs_${convId}`, JSON.stringify({ t: Date.now(), d: msgs.slice(-100) }));
+  } catch {}
+}
+
+function loadMsgCache(convId: string): Message[] | null {
+  try {
+    const raw = localStorage.getItem(`msgs_${convId}`);
+    if (!raw) return null;
+    const { t, d } = JSON.parse(raw);
+    if (Date.now() - t > CACHE_TTL) return null;
+    return d;
+  } catch { return null; }
+}
 
 interface ChatState {
   conversations: Conversation[];
@@ -32,20 +68,26 @@ export const useChatStore = create<ChatState>((set, get) => ({
   totalUnread: 0,
 
   loadConversations: async () => {
-    // Debounce: skip if called within cooldown
     const now = Date.now();
     if (now - lastLoadTime < LOAD_COOLDOWN) {
-      // Schedule a delayed load instead
       if (loadDebounceTimer) clearTimeout(loadDebounceTimer);
-      loadDebounceTimer = setTimeout(() => {
-        get().loadConversations();
-      }, LOAD_COOLDOWN);
+      loadDebounceTimer = setTimeout(() => get().loadConversations(), LOAD_COOLDOWN);
       return;
     }
     lastLoadTime = now;
 
     const isFirst = get().conversations.length === 0;
-    if (isFirst) set({ isLoading: true });
+
+    // Load from cache instantly on first load
+    if (isFirst) {
+      const cached = loadCache();
+      if (cached) {
+        const totalUnread = cached.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+        set({ conversations: cached, totalUnread });
+      } else {
+        set({ isLoading: true });
+      }
+    }
 
     try {
       const res = (await chatAPI.getConversations()) as {
@@ -57,6 +99,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         const serverUnread = !Array.isArray(res.data) ? res.data.totalUnread : undefined;
         const totalUnread = serverUnread ?? convos.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
         set({ conversations: convos, totalUnread });
+        saveCache(convos);
       }
     } finally {
       if (isFirst) set({ isLoading: false });
@@ -64,6 +107,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   loadMessages: async (conversationId) => {
+    // Load from cache instantly
+    const existing = get().messages[conversationId];
+    if (!existing || existing.length === 0) {
+      const cached = loadMsgCache(conversationId);
+      if (cached) {
+        set((state) => ({ messages: { ...state.messages, [conversationId]: cached } }));
+      }
+    }
+
     try {
       const res = (await chatAPI.getMessages(conversationId)) as {
         success: boolean;
@@ -71,9 +123,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       };
       if (res.success && res.data) {
         const msgs = Array.isArray(res.data) ? res.data : res.data.messages || [];
-        set((state) => ({
-          messages: { ...state.messages, [conversationId]: msgs },
-        }));
+        set((state) => ({ messages: { ...state.messages, [conversationId]: msgs } }));
+        saveMsgCache(conversationId, msgs);
       }
     } catch {
       // silent
@@ -143,6 +194,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   reset: () => {
     if (loadDebounceTimer) clearTimeout(loadDebounceTimer);
     lastLoadTime = 0;
+    try { localStorage.removeItem(CACHE_KEY); } catch {}
     set({ conversations: [], messages: {}, activeConversation: null, isLoading: false, totalUnread: 0 });
   },
 }));
