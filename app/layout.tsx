@@ -65,6 +65,9 @@ export const metadata: Metadata = {
     images: ["/images/logo.png"],
   },
   robots: { index: true, follow: true },
+  verification: {
+    google: "LPWFrnw1jaCNtgrh4XFA6il7DkaYLAxZz2QQBmIq5sM",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
