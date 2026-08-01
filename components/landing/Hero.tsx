@@ -7,7 +7,7 @@ import Avatar from "@/components/ui/Avatar";
 import { MessageCircleHeart, Sparkles, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface FeaturedUser {
+export interface FeaturedUser {
   name: string;
   profileImage?: string;
   country?: string;
@@ -15,27 +15,11 @@ interface FeaturedUser {
   isPremium?: boolean;
 }
 
-export default function Hero() {
-  const [users, setUsers] = useState<FeaturedUser[]>([]);
+export default function Hero({ users = [] }: { users?: FeaturedUser[] }) {
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     setLoggedIn(!!localStorage.getItem("token"));
-    // Fetch featured users for the showcase
-    async function loadUsers() {
-      try {
-        const res = await fetch("/api/users/featured");
-        const data = await res.json();
-        if (data.success && data.data) {
-          const list = Array.isArray(data.data) ? data.data : data.data.users || [];
-          setUsers(list.slice(0, 12));
-        }
-      } catch {
-        // Fallback placeholder users
-        setUsers([]);
-      }
-    }
-    loadUsers();
   }, []);
 
   return (

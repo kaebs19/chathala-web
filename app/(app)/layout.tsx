@@ -79,7 +79,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="p-5 border-b border-border">
           <div className="flex items-center justify-between">
             <Link href="/chats">
-              <Logo />
+              <Logo priority />
             </Link>
             <div className={cn("w-2 h-2 rounded-full", socketConnected ? "bg-success" : "bg-error animate-pulse")} title={socketConnected ? "متصل" : "غير متصل"} />
           </div>

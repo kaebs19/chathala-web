@@ -17,6 +17,7 @@ import Logo from "@/components/shared/Logo";
 import Avatar from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import { APP_STORE_URL, GOOGLE_PLAY_URL } from "@/lib/links";
 
 const navLinks = [
   { href: "/", label: "الرئيسية" },
@@ -67,7 +68,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           <Link href="/" onClick={() => setIsOpen(false)}>
-            <Logo />
+            <Logo priority />
           </Link>
 
           {/* Desktop Nav */}
@@ -91,13 +92,23 @@ export default function Header() {
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3">
             <a
-              href="https://apps.apple.com/us/app/chat-hala/id1369295351"
+              href={APP_STORE_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-hover/50 hover:bg-bg-hover text-text-muted hover:text-text-primary transition-colors text-xs"
             >
               <Smartphone size={14} />
-              <span>حمّل التطبيق</span>
+              <span>App Store</span>
+            </a>
+
+            <a
+              href={GOOGLE_PLAY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-hover/50 hover:bg-bg-hover text-text-muted hover:text-text-primary transition-colors text-xs"
+            >
+              <Smartphone size={14} />
+              <span>Google Play</span>
             </a>
 
             {loggedIn ? (
@@ -125,6 +136,8 @@ export default function Header() {
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
+            aria-label={isOpen ? "إغلاق القائمة" : "فتح القائمة"}
+            aria-expanded={isOpen}
             className="lg:hidden text-text-primary p-2"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -154,7 +167,7 @@ export default function Header() {
             ))}
 
             <a
-              href="https://apps.apple.com/us/app/chat-hala/id1369295351"
+              href={APP_STORE_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-success hover:bg-bg-hover transition-colors"
@@ -162,6 +175,17 @@ export default function Header() {
             >
               <Smartphone size={18} />
               حمّل من App Store
+            </a>
+
+            <a
+              href={GOOGLE_PLAY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-success hover:bg-bg-hover transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <Smartphone size={18} />
+              حمّل من Google Play
             </a>
 
             <div className="pt-3 flex flex-col gap-2">

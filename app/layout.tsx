@@ -1,13 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import Providers from "@/components/shared/Providers";
+import { Tajawal } from "next/font/google";
 import ToastContainer from "@/components/ui/Toast";
 import "./globals.css";
+
+const tajawal = Tajawal({
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "700", "900"],
+  variable: "--font-tajawal",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   themeColor: "#0D0010",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // no maximumScale — capping it blocks pinch-zoom for low-vision users
 };
 
 export const metadata: Metadata = {
@@ -51,8 +58,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/images/logo.png",
-        width: 1024,
-        height: 1024,
+        width: 512,
+        height: 512,
         alt: "ChatHala شات هلا",
       },
     ],
@@ -84,15 +91,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className="h-full antialiased">
+    <html
+      lang="ar"
+      dir="rtl"
+      className={`h-full antialiased ${tajawal.variable}`}
+    >
       <head>
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="min-h-full flex flex-col">
-        <Providers>
-          <ToastContainer />
-          {children}
-        </Providers>
+        <ToastContainer />
+        {children}
       </body>
     </html>
   );

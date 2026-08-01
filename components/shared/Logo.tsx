@@ -1,9 +1,13 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
+import logoSrc from "@/public/images/logo.png";
 
 interface LogoProps {
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
   showText?: boolean;
+  /** set on above-the-fold instances (header) so the mark isn't lazy-loaded */
+  priority?: boolean;
 }
 
 const imageSizeMap = {
@@ -13,6 +17,14 @@ const imageSizeMap = {
   xl: "h-20 w-20",
 };
 
+/** rendered px per size — drives the srcset Next generates */
+const pixelSizeMap = {
+  sm: 32,
+  md: 40,
+  lg: 56,
+  xl: 80,
+};
+
 const textSizeMap = {
   sm: "text-lg",
   md: "text-xl",
@@ -20,12 +32,20 @@ const textSizeMap = {
   xl: "text-3xl",
 };
 
-export default function Logo({ size = "md", className, showText = true }: LogoProps) {
+export default function Logo({
+  size = "md",
+  className,
+  showText = true,
+  priority = false,
+}: LogoProps) {
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
-      <img
-        src="/images/logo.png"
+      <Image
+        src={logoSrc}
         alt="ChatHala"
+        width={pixelSizeMap[size]}
+        height={pixelSizeMap[size]}
+        priority={priority}
         className={cn("rounded-xl object-contain", imageSizeMap[size])}
       />
       {showText && (

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { Smartphone, Globe, ArrowLeft } from "lucide-react";
+import { APP_STORE_URL, GOOGLE_PLAY_URL } from "@/lib/links";
 
 export default function DownloadCTA() {
   return (
@@ -21,7 +22,7 @@ export default function DownloadCTA() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
             {/* App Store */}
             <a
-              href="https://apps.apple.com/us/app/chat-hala/id1369295351"
+              href={APP_STORE_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-bg-input border border-border rounded-xl px-6 py-3 hover:border-accent-pink/50 transition-all"
@@ -35,7 +36,9 @@ export default function DownloadCTA() {
 
             {/* Google Play */}
             <a
-              href="#"
+              href={GOOGLE_PLAY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-3 bg-bg-input border border-border rounded-xl px-6 py-3 hover:border-accent-pink/50 transition-all"
             >
               <Smartphone size={28} className="text-success" />

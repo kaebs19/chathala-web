@@ -48,10 +48,12 @@ export default function HowItWorks() {
                 <div className="hidden lg:block absolute top-12 -left-4 w-8 h-0.5 bg-border" />
               )}
 
-              {/* Step Number */}
-              <div className="text-6xl font-black text-accent-pink/10 mb-2">
-                {step.step}
-              </div>
+              {/* Step Number — decorative watermark (see .step-watermark) */}
+              <div
+                aria-hidden="true"
+                data-step={step.step}
+                className="step-watermark text-6xl font-black text-accent-pink/10 mb-2"
+              />
 
               {/* Icon */}
               <div className="w-16 h-16 rounded-2xl gradient-bg mx-auto flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">

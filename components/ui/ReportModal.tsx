@@ -93,7 +93,7 @@ export default function ReportModal({ userId, userName, onClose }: ReportModalPr
 
         {/* Description */}
         <textarea
-          className="w-full bg-bg-input border border-border rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-muted/50 focus:outline-none focus:border-error/50 min-h-[80px] resize-y mb-4"
+          className="w-full bg-bg-input border border-border rounded-xl px-4 py-3 text-base sm:text-sm text-text-primary placeholder-text-muted/50 focus:outline-none focus:border-error/50 min-h-[80px] resize-y mb-4"
           placeholder="وصف إضافي (اختياري)..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}

@@ -8,6 +8,14 @@
     "start": "next start",
     "lint": "eslint"
   },
+  "browserslist": [
+    "chrome >= 108",
+    "edge >= 108",
+    "firefox >= 108",
+    "safari >= 16",
+    "ios_saf >= 16",
+    "not dead"
+  ],
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
     "lucide-react": "^1.8.0",
