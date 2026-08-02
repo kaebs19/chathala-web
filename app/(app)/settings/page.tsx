@@ -24,6 +24,7 @@ import { useNotificationStore } from "@/stores/notificationStore";
 import { disconnectSocket } from "@/lib/socket";
 import { toast } from "@/components/ui/Toast";
 import { api } from "@/lib/api";
+import { logError } from "@/lib/logger";
 
 const settingsGroups = [
   {
@@ -73,7 +74,8 @@ export default function SettingsPage() {
       } else {
         toast("فشل حذف الحساب", "error");
       }
-    } catch {
+    } catch (err) {
+      logError("settings", err);
       toast("حدث خطأ", "error");
     } finally {
       setDeleting(false);

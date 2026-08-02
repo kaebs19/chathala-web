@@ -21,6 +21,7 @@ import { toast } from "@/components/ui/Toast";
 import Lightbox from "@/components/ui/Lightbox";
 import { getAge, getImageUrl } from "@/lib/utils";
 import type { User } from "@/types";
+import { logError } from "@/lib/logger";
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
@@ -44,7 +45,8 @@ export default function ProfilePage() {
         if (updated) setUser(updated);
         toast("تم تحديث الصورة", "success");
       }
-    } catch {
+    } catch (err) {
+      logError("profile", err);
       toast("فشل رفع الصورة", "error");
     }
   };
@@ -135,8 +137,9 @@ export default function ProfilePage() {
                 onClick={() => setLightboxIndex(i)}
                 className="aspect-square rounded-xl overflow-hidden bg-bg-card border border-border hover:opacity-80 transition-opacity cursor-pointer"
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={getImageUrl(photo)}
+                  src={getImageUrl(photo, "medium")}
                   alt={`صورة ${i + 1}`}
                   className="w-full h-full object-cover"
                   loading="lazy"

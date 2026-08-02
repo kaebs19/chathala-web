@@ -1,3 +1,5 @@
+import { logError } from "@/lib/logger";
+
 // API requests go through Next.js rewrite proxy → no CORS issues
 const API_BASE = "/api";
 
@@ -94,7 +96,8 @@ async function tryRefreshToken(): Promise<boolean> {
       return true;
     }
     return false;
-  } catch {
+  } catch (err) {
+    logError("api:refresh", err);
     return false;
   }
 }

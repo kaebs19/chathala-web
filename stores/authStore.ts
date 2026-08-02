@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import type { User } from "@/types";
 import { authAPI, setToken, removeToken } from "@/lib/api";
+import { logError } from "@/lib/logger";
 
 interface AuthState {
   user: User | null;
@@ -55,7 +56,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
       set({ error: res.message || "فشل تسجيل الدخول", isLoading: false });
       return false;
-    } catch {
+    } catch (err) {
+      logError("auth:store", err);
       set({ error: "حدث خطأ في الاتصال", isLoading: false });
       return false;
     }
@@ -85,7 +87,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
       set({ error: res.message || "فشل إنشاء الحساب", isLoading: false });
       return false;
-    } catch {
+    } catch (err) {
+      logError("auth:store", err);
       set({ error: "حدث خطأ في الاتصال", isLoading: false });
       return false;
     }
@@ -122,7 +125,8 @@ export const useAuthStore = create<AuthState>((set) => ({
           set({ isLoading: false });
         }
       }
-    } catch {
+    } catch (err) {
+      logError("auth:store", err);
       const cached = localStorage.getItem("user");
       if (cached) {
         set({ user: JSON.parse(cached), isAuthenticated: true, isLoading: false });

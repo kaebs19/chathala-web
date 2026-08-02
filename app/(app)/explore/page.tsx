@@ -22,6 +22,7 @@ import { cn, getImageUrl } from "@/lib/utils";
 import { CardSkeleton } from "@/components/ui/Skeleton";
 import { toast } from "@/components/ui/Toast";
 import type { SwipeCard, ApiResponse } from "@/types";
+import { logError } from "@/lib/logger";
 
 interface Filters {
   onlineOnly: boolean;
@@ -120,7 +121,8 @@ export default function ExplorePage() {
       } else {
         toast(res.message || "فشل الإرسال", "error");
       }
-    } catch {
+    } catch (err) {
+      logError("explore", err);
       toast("حدث خطأ", "error");
     } finally {
       setSendingMsg(false);
@@ -138,7 +140,8 @@ export default function ExplorePage() {
       if (res.data?.match) {
         toast(`تطابق مع ${card.name}! 🎉`, "success", 4000);
       }
-    } catch {
+    } catch (err) {
+      logError("explore", err);
       toast("حدث خطأ", "error");
     }
 
@@ -268,8 +271,9 @@ export default function ExplorePage() {
               ].filter(Boolean) as string[];
               const currentPhoto = allPhotos[photoIndex] || currentCard.profileImage;
               return currentPhoto ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={getImageUrl(currentPhoto)}
+                  src={getImageUrl(currentPhoto, "medium")}
                   alt={currentCard.name}
                   className="w-full h-full object-cover select-none"
                   draggable={false}

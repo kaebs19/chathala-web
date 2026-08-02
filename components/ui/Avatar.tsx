@@ -19,6 +19,17 @@ const sizeClasses = {
   xl: "w-24 h-24 text-2xl",
 };
 
+/** rendered px — used for intrinsic width/height so avatars don't shift */
+const pixelSize = { sm: 32, md: 48, lg: 64, xl: 96 };
+
+/** 150px thumb covers every size here at 2x except xl (96px -> needs 192) */
+const variantForSize = {
+  sm: "thumb",
+  md: "thumb",
+  lg: "thumb",
+  xl: "medium",
+} as const;
+
 const onlineDot = {
   sm: "w-2.5 h-2.5",
   md: "w-3.5 h-3.5",
@@ -56,10 +67,16 @@ export default function Avatar({
   return (
     <div className={cn("relative inline-flex shrink-0", className)}>
       {showImage ? (
+        // Already a correctly-sized WebP from the API, so next/image would add
+        // server-side resizing cost for no gain.
+        // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={getImageUrl(src)}
+          src={getImageUrl(src, variantForSize[size])}
           alt={name || "avatar"}
+          width={pixelSize[size]}
+          height={pixelSize[size]}
           loading="lazy"
+          decoding="async"
           onError={() => setImgError(true)}
           className={cn(
             sizeClasses[size],

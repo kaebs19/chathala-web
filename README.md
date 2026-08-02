@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# chathala-web
 
-## Getting Started
+واجهة الويب لـ ChatHala — Next.js 16 (App Router) + React 19 + Tailwind 4 + Zustand.
 
-First, run the development server:
+## التشغيل محلياً
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+يحتاج ملف `.env.local` (غير مُتتبَّع في git):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+NEXT_PUBLIC_API_URL=https://matchhala.khalafiati.io/api
+NEXT_PUBLIC_SOCKET_URL=https://matchhala.khalafiati.io
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=<google oauth client id>
+INTERNAL_API_URL=http://127.0.0.1:3000/api   # على السيرفر فقط
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`INTERNAL_API_URL` مهم على السيرفر: الجلب من طرف السيرفر لا يستطيع استخدام
+الدومين العام لأن السيرفر لا يصل إلى دومينه (يرجع `HTTP 000`). المتغيرات التي
+تبدأ بـ `NEXT_PUBLIC_` تُدمج وقت البناء، لذا أي تغيير فيها يستلزم إعادة بناء.
 
-## Learn More
+## النشر
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+./deploy.sh
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+السكربت يفحص الأنواع ويبني محلياً، ثم يدفع، ثم يبني على السيرفر ويعيد التشغيل
+ويتحقق من الصفحات.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### لماذا ريموتان
 
-## Deploy on Vercel
+| الريموت | الوجهة | الدور |
+|---|---|---|
+| `origin` | GitHub (خاص) | الحفظ والتاريخ |
+| `contabo` | `ssh://contabo/var/www/chathala-web` | النشر الفعلي |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+السيرفر **لا يستطيع** السحب من GitHub — الريبو خاص وليس على السيرفر مفتاح نشر.
+لذلك يُدفع إليه مباشرة عبر SSH، وهو ممكن لأن مستودعه مضبوط على:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+git config receive.denyCurrentBranch updateInstead
+```
+
+`origin` على السيرفر ما زال يشير إلى GitHub لتوثيق المصدر فقط — لا تحاول
+`git pull` هناك، ستفشل.
+
+البناء لا بد أن يتم **على السيرفر**: `next/font` و`next/image` يولّدان أصولاً
+وقت البناء، ومجلد `.next` غير مُتتبَّع.
+
+## ملاحظات معمارية
+
+- **الصور**: الـ API يخزّن ثلاث نسخ لكل رفع (`thumb` 150px، `medium` 370px،
+  `original` 740px). استخدم `getImageUrl(path, variant)` واطلب المقاس المعروض
+  فعلاً. `<img>` مقصود في مواضع صور المستخدمين — النسخ جاهزة WebP بالمقاس
+  الصحيح، و`next/image` سيعيد ترميز 38 ألف صورة على السيرفر بلا مقابل يُذكر.
+- **حالة الدخول**: سكربت داخل `<head>` يضبط `[data-auth]` على `<html>` قبل أول
+  رسم، وCSS يبدّل بين `.auth-in` و`.auth-out`. البديل (قراءة كوكي على السيرفر)
+  يلغي التصيير الساكن للصفحة التسويقية.
+- **الأخطاء**: استخدم `logError`/`logWarn` من `lib/logger.ts` بدل `catch {}`
+  الفارغة — واحدة منها أخفت انقطاعاً في الإنتاج لأيام.

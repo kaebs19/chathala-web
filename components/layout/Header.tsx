@@ -30,7 +30,8 @@ const navLinks = [
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(false);
+  // Whether the signed-in block is shown is decided by CSS via [data-auth]
+  // (see globals.css) — these only fill in the avatar's name/photo.
   const [userName, setUserName] = useState("");
   const [userImage, setUserImage] = useState("");
   const pathname = usePathname();
@@ -42,9 +43,7 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setLoggedIn(true);
+    if (localStorage.getItem("token")) {
       try {
         const cached = localStorage.getItem("user");
         if (cached) {
@@ -52,7 +51,9 @@ export default function Header() {
           setUserName(u.name || "");
           setUserImage(u.profileImage || "");
         }
-      } catch {}
+      } catch {
+        // corrupt cached user blob — the header just falls back to initials
+      }
     }
   }, []);
 
@@ -111,26 +112,24 @@ export default function Header() {
               <span>Google Play</span>
             </a>
 
-            {loggedIn ? (
-              <Link href="/chats" className="flex items-center gap-2">
-                <Button size="sm">
-                  <MessageCircle size={16} />
-                  محادثاتي
+            <Link href="/chats" className="auth-in flex items-center gap-2">
+              <Button size="sm">
+                <MessageCircle size={16} />
+                محادثاتي
+              </Button>
+              <Avatar src={userImage} name={userName} size="sm" />
+            </Link>
+
+            <div className="auth-out flex items-center gap-3">
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  تسجيل الدخول
                 </Button>
-                <Avatar src={userImage} name={userName} size="sm" />
               </Link>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost" size="sm">
-                    تسجيل الدخول
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button size="sm">إنشاء حساب</Button>
-                </Link>
-              </>
-            )}
+              <Link href="/register">
+                <Button size="sm">إنشاء حساب</Button>
+              </Link>
+            </div>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -189,25 +188,27 @@ export default function Header() {
             </a>
 
             <div className="pt-3 flex flex-col gap-2">
-              {loggedIn ? (
-                <Link href="/chats" onClick={() => setIsOpen(false)}>
-                  <Button className="w-full">
-                    <MessageCircle size={18} />
-                    ادخل محادثاتك
+              <Link
+                href="/chats"
+                className="auth-in"
+                onClick={() => setIsOpen(false)}
+              >
+                <Button className="w-full">
+                  <MessageCircle size={18} />
+                  ادخل محادثاتك
+                </Button>
+              </Link>
+
+              <div className="auth-out flex flex-col gap-2">
+                <Link href="/login" onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" className="w-full">
+                    تسجيل الدخول
                   </Button>
                 </Link>
-              ) : (
-                <>
-                  <Link href="/login" onClick={() => setIsOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      تسجيل الدخول
-                    </Button>
-                  </Link>
-                  <Link href="/register" onClick={() => setIsOpen(false)}>
-                    <Button className="w-full">إنشاء حساب</Button>
-                  </Link>
-                </>
-              )}
+                <Link href="/register" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full">إنشاء حساب</Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>

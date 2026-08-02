@@ -46,8 +46,9 @@ export default function Lightbox({ images, initialIndex = 0, onClose }: Lightbox
       </div>
 
       {/* Image */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={getImageUrl(images[index])}
+        src={getImageUrl(images[index], "original")}
         alt={`صورة ${index + 1}`}
         className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg select-none"
         onClick={(e) => e.stopPropagation()}

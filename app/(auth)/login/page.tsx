@@ -11,6 +11,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { api, setToken } from "@/lib/api";
 import { initAppleSignIn, signInWithApple } from "@/lib/appleAuth";
 import type { User } from "@/types";
+import { logError } from "@/lib/logger";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -97,7 +98,8 @@ export default function LoginPage() {
           : never;
 
         handleSocialSuccess(res);
-      } catch {
+      } catch (err) {
+        logError("auth:login", err);
         setSocialError("فشل الاتصال بـ Google");
       } finally {
         setSocialLoading(null);
@@ -136,7 +138,8 @@ export default function LoginPage() {
       };
 
       handleSocialSuccess(res);
-    } catch {
+    } catch (err) {
+      logError("auth:login", err);
       setSocialError("فشل الاتصال بـ Apple");
     } finally {
       setSocialLoading(null);

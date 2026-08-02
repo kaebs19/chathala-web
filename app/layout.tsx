@@ -98,6 +98,18 @@ export default function RootLayout({
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
+        {/*
+          Marks signed-in state on <html> before first paint, so the header and
+          hero can render the right call-to-action immediately. Reading it in a
+          Server Component instead would mean cookies() — which opts the whole
+          marketing page out of static rendering.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{document.documentElement.dataset.auth=localStorage.getItem('token')?'in':'out'}catch(e){document.documentElement.dataset.auth='out'}",
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col">
         <ToastContainer />

@@ -1,6 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Avatar from "@/components/ui/Avatar";
@@ -16,12 +13,6 @@ export interface FeaturedUser {
 }
 
 export default function Hero({ users = [] }: { users?: FeaturedUser[] }) {
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  useEffect(() => {
-    setLoggedIn(!!localStorage.getItem("token"));
-  }, []);
-
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Effects */}
@@ -64,21 +55,18 @@ export default function Hero({ users = [] }: { users?: FeaturedUser[] }) {
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in-up"
           style={{ animationDelay: "0.3s" }}
         >
-          {loggedIn ? (
-            <Link href="/chats">
-              <Button size="lg" className="min-w-[200px] text-lg">
-                <MessageCircleHeart size={22} />
-                ادخل محادثاتك
-              </Button>
-            </Link>
-          ) : (
-            <Link href="/register">
-              <Button size="lg" className="min-w-[200px] text-lg">
-                <MessageCircleHeart size={22} />
-                ابدأ الآن مجاناً
-              </Button>
-            </Link>
-          )}
+          <Link href="/chats" className="auth-in">
+            <Button size="lg" className="min-w-[200px] text-lg">
+              <MessageCircleHeart size={22} />
+              ادخل محادثاتك
+            </Button>
+          </Link>
+          <Link href="/register" className="auth-out">
+            <Button size="lg" className="min-w-[200px] text-lg">
+              <MessageCircleHeart size={22} />
+              ابدأ الآن مجاناً
+            </Button>
+          </Link>
           <Link href="/download">
             <Button variant="outline" size="lg" className="min-w-[200px] text-lg">
               حمّل التطبيق

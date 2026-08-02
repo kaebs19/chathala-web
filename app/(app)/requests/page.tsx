@@ -12,6 +12,7 @@ import { formatDate, truncate } from "@/lib/utils";
 import { toast } from "@/components/ui/Toast";
 import { ChatSkeleton } from "@/components/ui/Skeleton";
 import type { User } from "@/types";
+import { logError } from "@/lib/logger";
 
 export default function RequestsPage() {
   const router = useRouter();
@@ -37,7 +38,10 @@ export default function RequestsPage() {
     try {
       const res = (await chatAPI.acceptRequest(id)) as { success: boolean };
       if (res.success) { toast("تم قبول الطلب", "success"); loadConversations(); }
-    } catch { toast("حدث خطأ", "error"); }
+    } catch (err) {
+      logError("requests", err);
+      toast("حدث خطأ", "error");
+    }
     finally { setRespondingTo(null); }
   };
 
@@ -46,7 +50,10 @@ export default function RequestsPage() {
     try {
       const res = (await chatAPI.acceptRequest(id)) as { success: boolean };
       if (res.success) router.push(`/chats/${id}`);
-    } catch { toast("حدث خطأ", "error"); }
+    } catch (err) {
+      logError("requests", err);
+      toast("حدث خطأ", "error");
+    }
     finally { setRespondingTo(null); }
   };
 
@@ -55,7 +62,10 @@ export default function RequestsPage() {
     try {
       const res = (await chatAPI.rejectRequest(id)) as { success: boolean };
       if (res.success) { toast("تم الرفض", "info"); loadConversations(); }
-    } catch { toast("حدث خطأ", "error"); }
+    } catch (err) {
+      logError("requests", err);
+      toast("حدث خطأ", "error");
+    }
     finally { setRespondingTo(null); }
   };
 

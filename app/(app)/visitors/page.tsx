@@ -10,6 +10,7 @@ import { userAPI } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import { formatDate } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { logError } from "@/lib/logger";
 
 interface Visitor {
   viewer: {
@@ -41,7 +42,8 @@ export default function VisitorsPage() {
           setVisitors(res.data.views || []);
           setTotalViews(res.data.totalViews || 0);
         }
-      } catch {
+      } catch (err) {
+        logError("visitors", err);
         // silent
       } finally {
         setIsLoading(false);

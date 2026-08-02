@@ -25,6 +25,7 @@ import { getSocket, SocketEvents } from "@/lib/socket";
 import { toast } from "@/components/ui/Toast";
 import ReportModal from "@/components/ui/ReportModal";
 import type { Message, User } from "@/types";
+import { logError } from "@/lib/logger";
 
 export default function ChatRoomPage() {
   const params = useParams();
@@ -170,7 +171,8 @@ export default function ChatRoomPage() {
         setText(content);
         toast(res.message || "فشل إرسال الرسالة", "error");
       }
-    } catch {
+    } catch (err) {
+      logError("chats:room", err);
       useChatStore.setState((s) => ({
         messages: {
           ...s.messages,
@@ -283,8 +285,9 @@ export default function ChatRoomPage() {
 
                   {/* Image message */}
                   {msg.type === "image" && (msg.imageUrl || msg.content) && (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={getImageUrl(msg.imageUrl || msg.content)}
+                      src={getImageUrl(msg.imageUrl || msg.content, "medium")}
                       alt="صورة"
                       className="rounded-xl max-h-64 w-auto"
                     />

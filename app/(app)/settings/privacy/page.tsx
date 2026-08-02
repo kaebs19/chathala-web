@@ -8,6 +8,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { toast } from "@/components/ui/Toast";
 import { Skeleton } from "@/components/ui/Skeleton";
 import type { PrivacySettings } from "@/types";
+import { logError } from "@/lib/logger";
 
 const settingItems = [
   { key: "profileVisibility" as const, icon: Eye, label: "إظهار الملف الشخصي", description: "السماح للآخرين برؤية ملفك" },
@@ -56,7 +57,8 @@ export default function PrivacySettingsPage() {
     try {
       await privacyAPI.updateSettings({ [key]: newValue });
       toast(newValue ? "تم التفعيل" : "تم الإيقاف", "success");
-    } catch {
+    } catch (err) {
+      logError("settings:privacy", err);
       setSettings((prev) => ({ ...prev, [key]: !newValue }));
       toast("فشل الحفظ", "error");
     } finally {

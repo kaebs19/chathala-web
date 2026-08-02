@@ -6,6 +6,7 @@ import { Mail, ArrowRight, CheckCircle2 } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { authAPI } from "@/lib/api";
+import { logError } from "@/lib/logger";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -28,7 +29,8 @@ export default function ForgotPasswordPage() {
       } else {
         setError(res.message || "حدث خطأ، تأكد من البريد الإلكتروني");
       }
-    } catch {
+    } catch (err) {
+      logError("auth:forgot", err);
       setError("حدث خطأ في الاتصال");
     } finally {
       setIsLoading(false);

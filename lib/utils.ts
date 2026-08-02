@@ -36,12 +36,30 @@ export function getAge(birthDate: string): number {
   return age;
 }
 
-export function getImageUrl(path?: string): string {
+/**
+ * The API stores three renditions of every upload:
+ *   thumb    150x150   ~2 KB
+ *   medium   370x400   ~9 KB
+ *   original 740x800   ~28 KB
+ * It hands back whichever one it feels like — usually `original` — so ask for
+ * the size actually being rendered instead of shipping 740px into a 40px slot.
+ */
+export type ImageVariant = "thumb" | "medium" | "original";
+
+const VARIANT_SEGMENT = /\/uploads\/(thumb|medium|original)\//;
+
+export function getImageUrl(path?: string, variant?: ImageVariant): string {
   if (!path) return "/images/default-avatar.svg";
-  if (path.startsWith("http")) return path;
-  const base =
-    process.env.NEXT_PUBLIC_API_URL || "https://matchhala.chathala.com";
-  return `${base.replace("/api", "")}/uploads/${path}`;
+
+  const url = path.startsWith("http")
+    ? path
+    : `${(process.env.NEXT_PUBLIC_API_URL || "https://matchhala.chathala.com").replace("/api", "")}/uploads/${path}`;
+
+  // Only rewrite URLs that already point at a rendition directory — legacy
+  // `profile-images/`, `defaults/` and external hosts (Google avatars) have no
+  // variants and must be left alone.
+  if (!variant) return url;
+  return url.replace(VARIANT_SEGMENT, `/uploads/${variant}/`);
 }
 
 export function truncate(str: string, len: number): string {

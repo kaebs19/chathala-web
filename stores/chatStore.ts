@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import type { Conversation, Message } from "@/types";
 import { chatAPI } from "@/lib/api";
+import { logWarn } from "@/lib/logger";
 
 // Debounce helper
 let loadDebounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -16,7 +17,9 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 min
 function saveCache(conversations: Conversation[]) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), d: conversations }));
-  } catch {}
+  } catch {
+    // storage full or blocked (private mode) — the cache is best-effort
+  }
 }
 
 function loadCache(): Conversation[] | null {
@@ -26,13 +29,18 @@ function loadCache(): Conversation[] | null {
     const { t, d } = JSON.parse(raw);
     if (Date.now() - t > CACHE_TTL) return null;
     return d;
-  } catch { return null; }
+  } catch {
+    // unreadable/corrupt cache entry — fall through to a fresh fetch
+    return null;
+  }
 }
 
 function saveMsgCache(convId: string, msgs: Message[]) {
   try {
     localStorage.setItem(`msgs_${convId}`, JSON.stringify({ t: Date.now(), d: msgs.slice(-100) }));
-  } catch {}
+  } catch {
+    // best-effort, same as saveCache
+  }
 }
 
 function loadMsgCache(convId: string): Message[] | null {
@@ -42,7 +50,10 @@ function loadMsgCache(convId: string): Message[] | null {
     const { t, d } = JSON.parse(raw);
     if (Date.now() - t > CACHE_TTL) return null;
     return d;
-  } catch { return null; }
+  } catch {
+    // unreadable/corrupt cache entry — fall through to a fresh fetch
+    return null;
+  }
 }
 
 interface ChatState {
@@ -142,8 +153,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
     // Persist on server
     try {
       await chatAPI.markAsRead(conversationId);
-    } catch {
-      // silent — socket will also try
+    } catch (err) {
+      // the socket path also marks it read, so this is not fatal
+      logWarn("chats:markAsRead", err);
     }
   },
 
@@ -167,8 +179,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
         set((state) => ({ messages: { ...state.messages, [conversationId]: msgs } }));
         saveMsgCache(conversationId, msgs);
       }
-    } catch {
-      // silent
+    } catch (err) {
+      logWarn("chats:store", err);
     }
   },
 
@@ -235,6 +247,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   reset: () => {
     if (loadDebounceTimer) clearTimeout(loadDebounceTimer);
     lastLoadTime = 0;
+    // best-effort cache clear; storage may be blocked
     try { localStorage.removeItem(CACHE_KEY); } catch {}
     set({ conversations: [], messages: {}, activeConversation: null, isLoading: false, totalUnread: 0 });
   },

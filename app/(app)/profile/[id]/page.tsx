@@ -23,6 +23,7 @@ import { toast } from "@/components/ui/Toast";
 import { userAPI, chatAPI, exploreAPI } from "@/lib/api";
 import { getAge, getImageUrl, formatDate } from "@/lib/utils";
 import type { User } from "@/types";
+import { logError } from "@/lib/logger";
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -49,8 +50,8 @@ export default function UserProfilePage() {
             : (res.data as User);
           setProfile(u);
         }
-      } catch {
-        // silent
+      } catch (err) {
+        logError("profile:view", err);
       } finally {
         setIsLoading(false);
       }
@@ -74,7 +75,8 @@ export default function UserProfilePage() {
       } else {
         toast("تم إرسال الإعجاب", "success");
       }
-    } catch {
+    } catch (err) {
+      logError("profile:view", err);
       toast("حدث خطأ", "error");
     } finally {
       setActionLoading(null);
@@ -98,7 +100,8 @@ export default function UserProfilePage() {
       } else {
         toast(res.message || "فشل إرسال الطلب", "error");
       }
-    } catch {
+    } catch (err) {
+      logError("profile:view", err);
       toast("حدث خطأ", "error");
     } finally {
       setActionLoading(null);
@@ -128,7 +131,7 @@ export default function UserProfilePage() {
     ...(profile.profileImage ? [profile.profileImage] : []),
     ...(profile.photos?.filter(p => p !== profile.profileImage) || []),
   ];
-  const heroImage = profile.profileImage && !heroImgError ? getImageUrl(profile.profileImage) : null;
+  const heroImage = profile.profileImage && !heroImgError ? getImageUrl(profile.profileImage, "original") : null;
 
   return (
     <div className="max-w-3xl mx-auto pb-8">
@@ -153,6 +156,7 @@ export default function UserProfilePage() {
           className="block w-full aspect-[4/5] max-h-[500px] bg-bg-card relative overflow-hidden"
         >
           {heroImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={heroImage}
               alt={profile.name}
@@ -288,8 +292,9 @@ export default function UserProfilePage() {
                   onClick={() => setLightboxIndex(i)}
                   className="aspect-square rounded-xl overflow-hidden bg-bg-input border border-border hover:opacity-80 hover:border-accent-pink/50 transition-all group relative"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={getImageUrl(photo)}
+                    src={getImageUrl(photo, "medium")}
                     alt={`صورة ${i + 1}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     loading="lazy"

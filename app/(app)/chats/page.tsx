@@ -13,6 +13,7 @@ import { toast } from "@/components/ui/Toast";
 import type { User, Conversation } from "@/types";
 import { cn } from "@/lib/utils";
 import { ChatSkeleton } from "@/components/ui/Skeleton";
+import { logError } from "@/lib/logger";
 
 export default function ChatsPage() {
   const router = useRouter();
@@ -69,7 +70,8 @@ export default function ChatsPage() {
       } else {
         toast(res.message || "فشل القبول", "error");
       }
-    } catch {
+    } catch (err) {
+      logError("chats", err);
       toast("حدث خطأ", "error");
     } finally {
       setRespondingTo(null);
@@ -85,7 +87,8 @@ export default function ChatsPage() {
       } else {
         toast("فشل القبول", "error");
       }
-    } catch {
+    } catch (err) {
+      logError("chats", err);
       toast("حدث خطأ", "error");
     } finally {
       setRespondingTo(null);
@@ -102,7 +105,8 @@ export default function ChatsPage() {
       } else {
         toast(res.message || "فشل الرفض", "error");
       }
-    } catch {
+    } catch (err) {
+      logError("chats", err);
       toast("حدث خطأ", "error");
     } finally {
       setRespondingTo(null);

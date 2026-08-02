@@ -5,6 +5,7 @@ import { X, Flag, AlertTriangle } from "lucide-react";
 import { reportAPI } from "@/lib/api";
 import { toast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
+import { logError } from "@/lib/logger";
 
 interface ReportModalProps {
   userId: string;
@@ -43,7 +44,8 @@ export default function ReportModal({ userId, userName, onClose }: ReportModalPr
       } else {
         toast(res.message || "فشل إرسال البلاغ", "error");
       }
-    } catch {
+    } catch (err) {
+      logError("report", err);
       toast("حدث خطأ في الاتصال", "error");
     } finally {
       setSubmitting(false);

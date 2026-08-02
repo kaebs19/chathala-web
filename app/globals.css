@@ -92,6 +92,18 @@ a {
   text-decoration: none;
 }
 
+/* Signed-in/out swapping without a hydration flash. Both variants are in the
+   HTML; the pre-paint script in the root layout sets [data-auth] and CSS picks
+   one. Before the script runs we show the signed-out variant, which is what an
+   uncached first-time visitor gets anyway. */
+html:not([data-auth]) .auth-in,
+html[data-auth="out"] .auth-in {
+  display: none;
+}
+html[data-auth="in"] .auth-out {
+  display: none;
+}
+
 /* Decorative step watermark. Rendered as generated content so it stays purely
    presentational (WCAG 1.4.3 exempts decoration) — the step order is already
    conveyed by DOM order and the heading in each card. */
