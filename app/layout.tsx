@@ -82,6 +82,7 @@ export const metadata: Metadata = {
   },
   other: {
     "apple-itunes-app": "app-id=1369295351",
+    "facebook-domain-verification": "j886ynnavctlytjrb562xetgro1tqa",
   },
 };
 
