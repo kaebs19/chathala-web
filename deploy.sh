@@ -51,6 +51,9 @@ if [[ "$skip_github" == false ]]; then
 fi
 
 info "دفع إلى السيرفر (contabo)"
+# npm على السيرفر يعيد كتابة package-lock.json (يحذف وسوم peer) بعد كل بناء،
+# وupdateInstead يرفض الدفع ما دامت الشجرة غير نظيفة — نعيده للمُودَع أولاً.
+ssh "$REMOTE_HOST" "cd $APP_DIR && git checkout -- package-lock.json"
 git push contabo "$BRANCH"
 
 # ------------------------------------------------- البناء وإعادة التشغيل
@@ -58,7 +61,7 @@ git push contabo "$BRANCH"
 # أصولاً وقت البناء، ومجلد .next غير مُتتبَّع في git.
 info "البناء على السيرفر"
 # ملاحظة: بلا --omit=dev — بناء Next يحتاج tailwind و typescript وهي devDependencies.
-ssh "$REMOTE_HOST" "source ~/.nvm/nvm.sh && cd $APP_DIR && npm install --no-audit --no-fund >/dev/null && npm run build"
+ssh "$REMOTE_HOST" "source ~/.nvm/nvm.sh && cd $APP_DIR && npm install --no-audit --no-fund >/dev/null && git checkout -- package-lock.json && npm run build"
 
 info "إعادة تشغيل PM2"
 ssh "$REMOTE_HOST" "source ~/.nvm/nvm.sh && pm2 restart $PM2_NAME --update-env >/dev/null && sleep 4 && pm2 list --no-color | grep $PM2_NAME"
