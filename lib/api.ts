@@ -115,6 +115,11 @@ export const authAPI = {
   me: () => api("/auth/me"),
   forgotPassword: (email: string) =>
     api("/auth/forgot-password", { method: "POST", body: { email } }),
+  resetPassword: (email: string, resetToken: string, newPassword: string) =>
+    api("/auth/reset-password", {
+      method: "POST",
+      body: { email, resetToken, newPassword },
+    }),
   updateProfile: (data: Partial<{ name: string; bio: string; interests: string[] }>) =>
     api("/auth/update-profile", { method: "PUT", body: data }),
   uploadProfileImage: (formData: FormData) =>

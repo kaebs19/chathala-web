@@ -42,6 +42,15 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Universal Links: Apple's CDN fetches this and expects JSON (the file
+        // has no extension, so Next would otherwise serve it as octet-stream).
+        source: "/.well-known/apple-app-site-association",
+        headers: [
+          { key: "Content-Type", value: "application/json" },
+          { key: "Cache-Control", value: "public, max-age=3600" },
+        ],
+      },
+      {
         // static logo/icon assets — safe to cache hard, they change with a new filename
         source: "/images/:path*",
         headers: [

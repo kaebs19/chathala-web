@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["ZN3Z5KRWM7.com.app.hala"],
+        "components": [
+          { "/": "/forgot-password", "comment": "إعادة تعيين كلمة المرور من بريد الرمز" },
+          { "/": "/forgot-password/*" }
+        ]
+      }
+    ]
+  }
+}
