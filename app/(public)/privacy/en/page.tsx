@@ -18,7 +18,7 @@ export default function PrivacyPageEn() {
           <Shield size={32} className="text-white" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-black mb-4">Privacy Policy</h1>
-        <p className="text-text-muted">Last updated: October 26, 2026</p>
+        <p className="text-text-muted">Last updated: November 5, 2026</p>
         <Link href="/privacy" className="text-accent-pink hover:underline text-sm" lang="ar">
           النسخة العربية
         </Link>
@@ -98,6 +98,12 @@ export default function PrivacyPageEn() {
             <li>
               <strong>Disappearing photos and videos</strong> disappear for the recipient after viewing or 24 hours
               after sending, and <strong>stories</strong> disappear 24 hours after posting.
+            </li>
+            <li>
+              <strong>Hala+</strong> subscribers may reopen a disappearing photo or video <strong>once</strong> within{" "}
+              <strong>10 minutes</strong> of first viewing it, if the sender allowed this when sending, and the sender
+              is notified of the reopen. During that time the file stays on our servers, then it is handled like any
+              other expired disappearing media.
             </li>
             <li>
               After they end, we keep a protected copy, accessible only to our moderation team, for{" "}

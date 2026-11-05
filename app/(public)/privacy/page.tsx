@@ -18,7 +18,7 @@ export default function PrivacyPage() {
           <Shield size={32} className="text-white" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-black mb-4">سياسة الخصوصية</h1>
-        <p className="text-text-muted">آخر تحديث: ٢٦ أكتوبر ٢٠٢٦</p>
+        <p className="text-text-muted">آخر تحديث: ٥ نوفمبر ٢٠٢٦</p>
         <Link href="/privacy/en" className="text-accent-pink hover:underline text-sm" lang="en">
           English version
         </Link>
@@ -100,6 +100,11 @@ export default function PrivacyPage() {
             <li>
               <strong>الصور والفيديو المؤقتة</strong> تختفي عند المستلم بعد مشاهدتها أو بعد 24 ساعة من إرسالها،
               و<strong>القصص</strong> تختفي بعد 24 ساعة من نشرها.
+            </li>
+            <li>
+              لمشتركي <strong>هلا+</strong> إعادة فتح الصورة أو الفيديو المؤقت <strong>مرة واحدة</strong> خلال{" "}
+              <strong>10 دقائق</strong> من المشاهدة الأولى، إن سمح المرسل بذلك عند الإرسال، ويُعلَم المرسل بإعادة
+              الفتح. خلال هذه المدة يبقى الملف على خوادمنا ثم يُعامل كأي وسيط مؤقت منتهٍ.
             </li>
             <li>
               بعد انتهائها نحتفظ بنسخة محمية لا يطّلع عليها إلا فريق الإشراف، لمدة <strong>30 يوماً</strong>{" "}
