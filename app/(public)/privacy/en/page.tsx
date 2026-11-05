@@ -90,6 +90,7 @@ export default function PrivacyPageEn() {
           <ul>
             <li>When a report is submitted — the reported messages or media are reviewed</li>
             <li>When required by a court order or an official request from a competent authority</li>
+            <li>When a violation such as sharing external accounts or phone numbers is detected automatically — only the blocked message is reviewed</li>
           </ul>
         </PolicySection>
 
