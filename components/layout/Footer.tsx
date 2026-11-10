@@ -17,6 +17,7 @@ const footerLinks = {
     { href: "/privacy", label: "سياسة الخصوصية" },
     { href: "/terms", label: "شروط الاستخدام" },
     { href: "/child-safety", label: "معايير سلامة الأطفال" },
+    { href: "/report-content", label: "طلب إزالة محتوى" },
   ],
 };
 

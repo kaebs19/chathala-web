@@ -19,6 +19,7 @@ const routes: Array<{
   { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", changeFrequency: "yearly", priority: 0.3 },
   { path: "/child-safety", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/report-content", changeFrequency: "yearly", priority: 0.4 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
