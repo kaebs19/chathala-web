@@ -194,7 +194,7 @@ export default function RemovalForm() {
         <button
           type="button"
           onClick={() => { setLang(lang === "ar" ? "en" : "ar"); setError(""); }}
-          className="inline-flex items-center gap-1.5 text-sm text-accent-pink hover:underline"
+          className="inline-flex items-center gap-1.5 min-h-10 px-3 -mx-3 rounded-full text-sm text-accent-pink hover:bg-accent-pink/10"
         >
           <Languages size={16} /> {t.switchLang}
         </button>

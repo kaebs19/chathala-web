@@ -45,7 +45,7 @@ export default function NotificationSettingsPage() {
     } else { disableBrowserNotify(); setBrowser(false); }
   };
 
-  const sw = (k: keyof Prefs) => <Switch checked={!!p?.[k]} onChange={(v) => save({ [k]: v } as Partial<Prefs>)} disabled={!p?.pushEnabled && k !== "pushEnabled"} label={String(k)} />;
+  const sw = (k: keyof Prefs, label: string) => <Switch checked={!!p?.[k]} onChange={(v) => save({ [k]: v } as Partial<Prefs>)} disabled={!p?.pushEnabled && k !== "pushEnabled"} label={label} />;
   const off = !p?.pushEnabled;
 
   return (
@@ -61,16 +61,16 @@ export default function NotificationSettingsPage() {
         {!p ? <div className="py-10 flex justify-center"><Spinner /></div> : (
           <>
             <Section title="إشعارات تطبيق الجوال">
-              <Row icon={Bell} color="#E91E8C" title="كل الإشعارات" subtitle="إيقافها يوقف إشعارات هلا على جوالك" end={sw("pushEnabled")} />
+              <Row icon={Bell} color="#E91E8C" title="كل الإشعارات" subtitle="إيقافها يوقف إشعارات هلا على جوالك" end={sw("pushEnabled", "كل الإشعارات")} />
             </Section>
             <div className={cn(off && "opacity-50 pointer-events-none")} aria-disabled={off}>
               <Section title="المحادثات">
-                <Row icon={MessageCircle} color="#8B5CF6" title="الرسائل" end={sw("messages")} />
-                <Row icon={Mail} color="#0EA5E9" title="طلبات المحادثة" end={sw("invitations")} />
+                <Row icon={MessageCircle} color="#8B5CF6" title="الرسائل" end={sw("messages", "الرسائل")} />
+                <Row icon={Mail} color="#0EA5E9" title="طلبات المحادثة" end={sw("invitations", "طلبات المحادثة")} />
               </Section>
               <Section title="الإعجابات">
-                <Row icon={Sparkles} color="#E91E8C" title="التطابق" end={sw("matches")} />
-                <Row icon={Star} color="#3B82F6" title="سوبر لايك" end={sw("superLikes")} />
+                <Row icon={Sparkles} color="#E91E8C" title="التطابق" end={sw("matches", "التطابق")} />
+                <Row icon={Star} color="#3B82F6" title="سوبر لايك" end={sw("superLikes", "سوبر لايك")} />
                 <LevelRow icon={Heart} color="#EF4444" title="الإعجابات" value={p.likes} onChange={(v) => save({ likes: v })} />
                 <DeliveryRow value={p.delivery.likes} onChange={(v) => save({ delivery: { ...p.delivery, likes: v } })} />
               </Section>
@@ -79,15 +79,15 @@ export default function NotificationSettingsPage() {
                 <DeliveryRow value={p.delivery.visits} onChange={(v) => save({ delivery: { ...p.delivery, visits: v } })} />
               </Section>
               <Section title="القصص">
-                <Row icon={Reply} color="#8B5CF6" title="الردود على قصصك" end={sw("storyReplies")} />
+                <Row icon={Reply} color="#8B5CF6" title="الردود على قصصك" end={sw("storyReplies", "الردود على قصصك")} />
                 <LevelRow icon={Heart} color="#F59E0B" title="التفاعلات" value={p.storyReactions} onChange={(v) => save({ storyReactions: v })} />
-                <Row icon={Camera} color="#6E6E78" title="لقطات الشاشة" end={sw("storyScreenshots")} />
-                <Row icon={Users} color="#10B981" title="قصص الأصدقاء" end={sw("friendStories")} />
-                <Row icon={Clock} color="#F97316" title="تذكير قبل انتهاء قصتك" end={sw("storyExpiryReminder")} />
+                <Row icon={Camera} color="#6E6E78" title="لقطات الشاشة" end={sw("storyScreenshots", "لقطات الشاشة")} />
+                <Row icon={Users} color="#10B981" title="قصص الأصدقاء" end={sw("friendStories", "قصص الأصدقاء")} />
+                <Row icon={Clock} color="#F97316" title="تذكير قبل انتهاء قصتك" end={sw("storyExpiryReminder", "تذكير قبل انتهاء قصتك")} />
                 <DeliveryRow value={p.delivery.stories} onChange={(v) => save({ delivery: { ...p.delivery, stories: v } })} />
               </Section>
               <Section title="أخرى">
-                <Row icon={BellRing} color="#6366F1" title="تنبيهات هلا" subtitle="تحديثات وإعلانات رسمية" end={sw("appAlerts")} />
+                <Row icon={BellRing} color="#6366F1" title="تنبيهات هلا" subtitle="تحديثات وإعلانات رسمية" end={sw("appAlerts", "تنبيهات هلا")} />
                 <Row icon={UserPlus} color="#14B8A6" title="الصداقة" subtitle="طلبات وقبول — تتبع «الرسائل»" />
               </Section>
             </div>
@@ -103,7 +103,7 @@ function Segmented<T extends string>({ value, options, onChange, label }: { valu
     <div className="flex bg-h-input rounded-xl p-1 gap-1" role="radiogroup" aria-label={label}>
       {options.map(([v, l]) => (
         <button key={v} role="radio" aria-checked={value === v} onClick={() => onChange(v)}
-          className={cn("px-3 h-8 rounded-lg text-xs font-bold transition", value === v ? "bg-h-card text-h-primary shadow-sm" : "text-h-text2")}>{l}</button>
+          className={cn("px-3 h-9 min-w-11 rounded-lg text-xs font-bold transition", value === v ? "bg-h-card text-h-primary shadow-sm" : "text-h-text2")}>{l}</button>
       ))}
     </div>
   );

@@ -106,7 +106,7 @@ export default function PremiumPage() {
             </div>
             <Button variant="gold" onClick={checkout} loading={busy}><Crown size={20} /> {provider.available ? "اشترك الآن" : "الاشتراك من الموقع قريباً"}</Button>
             {!provider.available && (
-              <a href={APP_STORE_URL} target="_blank" rel="noopener" className="mt-3 flex items-center justify-center gap-2 text-sm font-bold text-h-primary">
+              <a href={APP_STORE_URL} target="_blank" rel="noopener" className="mt-3 flex items-center justify-center gap-2 min-h-11 text-sm font-bold text-h-primary">
                 <Smartphone size={17} /> اشترك الآن من تطبيق هلا — مزاياك تظهر هنا تلقائياً
               </a>
             )}

@@ -96,9 +96,9 @@ export default function SettingsPage() {
     router.replace("/login");
   };
 
-  const sw = (key: keyof Privacy, needPremium = false) =>
+  const sw = (key: keyof Privacy, label: string, needPremium = false) =>
     needPremium && !premium ? <PremiumLock /> :
-      <Switch checked={!!p?.[key]} onChange={(v) => toggle(key, v)} disabled={!p || saving === key} />;
+      <Switch checked={!!p?.[key]} onChange={(v) => toggle(key, v)} disabled={!p || saving === key} label={label} />;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -129,18 +129,18 @@ export default function SettingsPage() {
         <Section title="الخصوصية">
           {!p ? <div className="py-6 flex justify-center"><Spinner size={22} /></div> : (
             <>
-              <Row icon={Clock} color="#10B981" title="إظهار آخر ظهور" subtitle="إن أخفيته لن ترى آخر ظهور الآخرين أيضاً" end={sw("showLastSeen")} />
-              <Row icon={Cake} color="#F59E0B" title="إظهار عمري" end={sw("showAge")} />
-              <Row icon={Globe2} color="#3B82F6" title="إظهار دولتي" end={sw("showCountry")} />
-              <Row icon={MapPin} color="#EF4444" title="إظهار المسافة" end={sw("showDistance")} />
-              <Row icon={Users} color="#8B5CF6" title="استقبال طلبات المحادثة" end={sw("acceptingRequests")} />
-              <Row icon={UserCheck} color="#E91E8C" title="الطلبات من مشتركي هلا+ فقط" end={sw("premiumOnlyRequests")} />
-              <Row icon={EyeOff} color="#6E6E78" title="وضع التخفّي" subtitle="تصفّح الملفات دون أن تظهر في الزوّار" end={sw("stealthMode", true)} />
+              <Row icon={Clock} color="#10B981" title="إظهار آخر ظهور" subtitle="إن أخفيته لن ترى آخر ظهور الآخرين أيضاً" end={sw("showLastSeen", "إظهار آخر ظهور")} />
+              <Row icon={Cake} color="#F59E0B" title="إظهار عمري" end={sw("showAge", "إظهار عمري")} />
+              <Row icon={Globe2} color="#3B82F6" title="إظهار دولتي" end={sw("showCountry", "إظهار دولتي")} />
+              <Row icon={MapPin} color="#EF4444" title="إظهار المسافة" end={sw("showDistance", "إظهار المسافة")} />
+              <Row icon={Users} color="#8B5CF6" title="استقبال طلبات المحادثة" end={sw("acceptingRequests", "استقبال طلبات المحادثة")} />
+              <Row icon={UserCheck} color="#E91E8C" title="الطلبات من مشتركي هلا+ فقط" end={sw("premiumOnlyRequests", "الطلبات من مشتركي هلا+ فقط")} />
+              <Row icon={EyeOff} color="#6E6E78" title="وضع التخفّي" subtitle="تصفّح الملفات دون أن تظهر في الزوّار" end={sw("stealthMode", "وضع التخفّي", true)} />
               <Row icon={Eye} color="#0EA5E9" title="القراءة الخفية" subtitle="اقرأ الرسائل دون إظهار ✓✓ للمرسل"
-                end={premium ? <Switch checked={invisible} onChange={toggleInvisible} /> : <PremiumLock />} />
+                end={premium ? <Switch checked={invisible} onChange={toggleInvisible} label="القراءة الخفية" /> : <PremiumLock />} />
               <Row icon={PauseCircle} color="#F97316" title="إخفاء ملفي من الاكتشاف"
                 subtitle={p.discoveryPaused?.enabled && p.discoveryPaused.until ? `حتى ${new Date(p.discoveryPaused.until).toLocaleDateString("ar-SA")}` : "أسبوعاً، ومحادثاتك تعمل كالمعتاد"}
-                end={premium || p.discoveryPaused?.enabled ? <Switch checked={!!p.discoveryPaused?.enabled} onChange={pause} disabled={saving === "pause"} /> : <PremiumLock />} />
+                end={premium || p.discoveryPaused?.enabled ? <Switch checked={!!p.discoveryPaused?.enabled} onChange={pause} disabled={saving === "pause"} label="إخفاء ملفي من الاكتشاف" /> : <PremiumLock />} />
               <Row icon={Ban} color="#DC2626" title="المحظورون" onClick={() => setSheet("blocked")} />
             </>
           )}

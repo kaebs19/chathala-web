@@ -119,7 +119,7 @@ export default function AccountPage() {
                 {["جميع بياناتك الشخصية", "جميع محادثاتك ورسائلك", "صورك ومعرض الصور", "اهتماماتك وإعداداتك", "اشتراكك (لن يتم استرداد المبلغ)", "سجل التفاعلات (لايكات، سوبر لايك)"].map((t) => <li key={t}>{t}</li>)}
               </ul>
             </div>
-            <p className="text-sm text-h-text2">تريد استراحة فقط؟ <button onClick={() => setMode("hide")} className="text-h-primary font-bold">أخفِ حسابك بدلاً من حذفه</button></p>
+            <p className="text-sm text-h-text2">تريد استراحة فقط؟ <button onClick={() => setMode("hide")} className="text-h-primary font-bold min-h-10 px-1">أخفِ حسابك بدلاً من حذفه</button></p>
             {needsPassword && (
               <Field type="password" label="كلمة المرور" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} error={err} />
             )}

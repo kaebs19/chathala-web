@@ -30,7 +30,7 @@ export default function Field({
         )}
         {isPw && (
           <button type="button" onClick={() => setShow((v) => !v)} aria-label={show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-h-text2 p-1">
+            className="absolute left-1.5 top-1/2 -translate-y-1/2 text-h-text2 w-10 h-10 flex items-center justify-center rounded-full">
             {show ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         )}
