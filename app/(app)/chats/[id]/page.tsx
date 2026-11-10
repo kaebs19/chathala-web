@@ -83,13 +83,21 @@ export default function ChatRoomPage() {
 
   // ── قراءة: عند الفتح وعند وصول رسالة من الطرف الآخر والصفحة ظاهرة
   const lastOther = useMemo(() => [...items].reverse().find((m) => senderIdOf(m) !== me && !m.local)?._id, [items, me]);
+  // ⚠️ لا تجعل conv نفسه اعتماداً: markRead يعدّل المحادثة فيتكرّر بلا نهاية (React #185)
+  const convStatus = conv?.status, convCreator = conv?.creator, hasConv = !!conv;
+  const markedFor = useRef<string | null>(null);
   useEffect(() => {
-    if (!conv || conv.status === "pending" && conv.creator !== me) return; // لا قراءة قبل القبول
-    const mark = () => document.visibilityState === "visible" && st().markRead(id);
+    if (!hasConv || (convStatus === "pending" && convCreator !== me)) return; // لا قراءة قبل القبول
+    const key = `${id}:${lastOther || ""}`;
+    const mark = () => {
+      if (document.visibilityState !== "visible" || markedFor.current === key) return;
+      markedFor.current = key;
+      st().markRead(id);
+    };
     mark();
     document.addEventListener("visibilitychange", mark);
     return () => document.removeEventListener("visibilitychange", mark);
-  }, [id, lastOther, conv?.status, conv?.creator, me, st, conv]);
+  }, [id, lastOther, convStatus, convCreator, hasConv, me, st]);
 
   // ── التمرير: للأسفل عند رسالة جديدة إن كان في الأسفل، والحفاظ على الموضع عند تحميل الأقدم
   useLayoutEffect(() => {

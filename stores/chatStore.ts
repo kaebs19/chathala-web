@@ -123,7 +123,12 @@ export const useChatStore = create<ChatState>((set, get) => {
     },
 
     patchConversation: (id, patch) =>
-      set((s) => ({ conversations: s.conversations.map((c) => (c._id === id ? { ...c, ...patch } : c)) })),
+      set((s) => {
+        const cur = s.conversations.find((c) => c._id === id);
+        // لا تغيير = لا حالة جديدة (يمنع إعادة رسم بلا داعٍ)
+        if (!cur || (Object.keys(patch) as (keyof Conversation)[]).every((k) => cur[k] === patch[k])) return s;
+        return { conversations: s.conversations.map((c) => (c._id === id ? { ...c, ...patch } : c)) };
+      }),
 
     removeConversation: (id) => set((s) => ({ conversations: s.conversations.filter((c) => c._id !== id) })),
 
