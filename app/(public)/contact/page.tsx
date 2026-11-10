@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Metadata } from "next";
 import { Mail, MessageSquare, MapPin, Clock, Send } from "lucide-react";
 import Button from "@/components/ui/Button";
@@ -11,7 +11,7 @@ const contactInfo = [
   {
     icon: Mail,
     title: "البريد الإلكتروني",
-    value: "support@chathala.com",
+    value: "info@chathala.com",
     description: "للاستفسارات العامة والدعم",
   },
   {
@@ -42,10 +42,33 @@ export default function ContactPage() {
     message: "",
   });
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+  const honeypot = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // مباشرة إلى الـ API لا عبر وكيل Next: حدّ الإرسال مفتاحه IP الزائر
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
+    setError("");
+    setSending(true);
+    try {
+      const res = await fetch("https://matchhala.chathala.com/api/public/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, website: honeypot.current?.value || "" }),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success) {
+        setSent(true);
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        setError(data?.message || "تعذّر إرسال الرسالة، حاول مجدداً");
+      }
+    } catch {
+      setError("تعذّر الاتصال، تحقّق من الإنترنت وحاول مجدداً");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -135,6 +158,8 @@ export default function ContactPage() {
                   <textarea
                     className="w-full bg-bg-input border border-border rounded-xl px-4 py-3 text-text-primary placeholder-text-muted/50 focus:outline-none focus:border-accent-pink focus:ring-1 focus:ring-accent-pink/50 transition-colors min-h-[120px] resize-y"
                     placeholder="اكتب رسالتك هنا..."
+                    minLength={10}
+                    maxLength={5000}
                     value={formData.message}
                     onChange={(e) =>
                       setFormData({ ...formData, message: e.target.value })
@@ -142,10 +167,21 @@ export default function ContactPage() {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full">
+                {/* حقل فخّ للروبوتات — مخفي عن البشر */}
+                <input ref={honeypot} type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
+                {error && (
+                  <p role="alert" className="text-sm text-error bg-error/10 border border-error/30 rounded-xl px-4 py-3">
+                    {error}
+                  </p>
+                )}
+                <Button type="submit" className="w-full" isLoading={sending} disabled={sending}>
                   <Send size={18} />
-                  إرسال الرسالة
+                  {sending ? "جارٍ الإرسال…" : "إرسال الرسالة"}
                 </Button>
+                <p className="text-xs text-text-muted">
+                  للإبلاغ عن حساب ينتحل شخصيتك أو محتوى مسيء استعمل{" "}
+                  <a href="/report-content" className="text-accent-pink hover:underline">طلب إزالة محتوى</a>.
+                </p>
               </form>
             </>
           )}
