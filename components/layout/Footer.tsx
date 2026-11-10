@@ -1,5 +1,6 @@
 import Link from "next/link";
-import Logo from "@/components/shared/Logo";
+import HalaLogo from "@/components/hala/HalaLogo";
+import StoreBadges from "@/components/landing/StoreBadges";
 import { Heart, Mail, Shield, FileText } from "lucide-react";
 
 const footerLinks = {
@@ -28,11 +29,11 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="md:col-span-1">
-            <Logo size="lg" />
+            <HalaLogo size={40} />
             <p className="mt-4 text-text-muted text-sm leading-relaxed">
-              منصة تواصل اجتماعي عربية للتعارف والدردشة. اكتشف أشخاص جدد وابنِ
-              علاقات حقيقية بخصوصية تامة.
+              دردشة وتعارف عربي — من الجوال أو المتصفح، بخصوصية وأمان.
             </p>
+            <StoreBadges className="mt-5" />
           </div>
 
           {/* Links */}
@@ -58,7 +59,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-text-muted">
-            &copy; {new Date().getFullYear()} ChatHala. جميع الحقوق محفوظة.
+            &copy; {new Date().getFullYear()} هلا — ChatHala. جميع الحقوق محفوظة.
           </p>
           <div className="flex items-center gap-1 text-sm text-text-muted">
             صُنع بـ <Heart size={14} className="text-accent-pink mx-1" /> في

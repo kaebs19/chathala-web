@@ -87,9 +87,12 @@ input, textarea, select {
   font-family: var(--font-tajawal), sans-serif;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* داخل @layer base: خارج الطبقات كان يغلب كل أدوات Tailwind (text-*) على الروابط */
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
 /* Signed-in/out swapping without a hydration flash. Both variants are in the
@@ -274,3 +277,40 @@ html[data-app][data-theme="dark"] body { --h-page-bg: #0D0010; }
 @media (prefers-reduced-motion: reduce) {
   .h-pop, .h-fade, .h-sheet, .h-typing-dot { animation: none; }
 }
+
+/* الصفحات العامة داخل .hala: رموز التصميم القديم (الداكن) تُعاد إلى رموز الهوية،
+   فتتبع كل الصفحات العامة الوضعين بلا إعادة كتابة كل صفحة. */
+.hala {
+  --bg-primary: var(--h-bg);
+  --bg-secondary: var(--h-card);
+  --bg-card: var(--h-card);
+  --bg-input: var(--h-input);
+  --bg-hover: var(--h-input);
+  --text-primary: var(--h-text);
+  --text-secondary: var(--h-text2);
+  --text-muted: var(--h-text2);
+  --accent-pink: var(--h-primary);
+  --accent-purple: var(--h-secondary);
+  --border: var(--h-border);
+  --border-light: var(--h-divider);
+  --success: var(--h-success);
+  --error: var(--h-error);
+  --warning: var(--h-warning);
+  --info: var(--h-info);
+}
+.hala .gradient-bg { background-image: linear-gradient(to left, var(--h-primary), var(--h-accent)); }
+.hala .gradient-text {
+  background-image: linear-gradient(to left, var(--h-primary), var(--h-accent));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hala .glass {
+  background: color-mix(in srgb, var(--h-card) 82%, transparent);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--h-border);
+}
+.hala .glow { box-shadow: 0 10px 40px -12px color-mix(in srgb, var(--h-primary) 45%, transparent); }
+@keyframes h-float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+.h-float { animation: h-float 5s ease-in-out infinite; }
+.h-float-delay { animation: h-float 6s ease-in-out 1.2s infinite; }
+@media (prefers-reduced-motion: reduce) { .h-float, .h-float-delay { animation: none; } }
+html { scroll-padding-top: 80px; }

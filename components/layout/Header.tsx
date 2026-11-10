@@ -1,216 +1,111 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Menu,
-  X,
-  Download,
-  Info,
-  Phone,
-  HelpCircle,
-  Smartphone,
-  MessageCircle,
-} from "lucide-react";
-import Logo from "@/components/shared/Logo";
-import Avatar from "@/components/ui/Avatar";
-import Button from "@/components/ui/Button";
+import { Menu, MessageCircle, Moon, Sun, X } from "lucide-react";
+import HalaLogo from "@/components/hala/HalaLogo";
+import Avatar from "@/components/hala/Avatar";
+import StoreBadges from "@/components/landing/StoreBadges";
+import { useTheme } from "@/stores/themeStore";
 import { cn } from "@/lib/utils";
-import { APP_STORE_URL, GOOGLE_PLAY_URL } from "@/lib/links";
 
-const navLinks = [
-  { href: "/", label: "الرئيسية" },
-  { href: "/about", label: "حول التطبيق", icon: Info },
-  { href: "/download", label: "تحميل التطبيق", icon: Download },
-  { href: "/support", label: "الدعم", icon: HelpCircle },
-  { href: "/contact", label: "اتصل بنا", icon: Phone },
+// روابط أقسام الرئيسية فقط في الترويسة — الصفحات الثانوية (حول/الدعم/اتصل) في القائمة والتذييل
+const SECTIONS = [
+  { href: "/#features", label: "المزايا" },
+  { href: "/#how", label: "كيف يعمل" },
+  { href: "/#safety", label: "الأمان" },
+  { href: "/#faq", label: "الأسئلة" },
+];
+const MORE = [
+  { href: "/about", label: "عن هلا" },
+  { href: "/download", label: "تحميل التطبيق" },
+  { href: "/support", label: "الدعم" },
+  { href: "/contact", label: "اتصل بنا" },
 ];
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  // Whether the signed-in block is shown is decided by CSS via [data-auth]
-  // (see globals.css) — these only fill in the avatar's name/photo.
-  const [userName, setUserName] = useState("");
-  const [userImage, setUserImage] = useState("");
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [me, setMe] = useState<{ name?: string; profileImage?: string } | null>(null);
+  const { pref, set } = useTheme();
+  const dark = pref === "dark" || (pref === "system" && typeof document !== "undefined" && document.documentElement.dataset.theme === "dark");
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const on = () => setScrolled(window.scrollY > 8);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    try { const u = localStorage.getItem("token") && localStorage.getItem("user"); if (u) setMe(JSON.parse(u)); } catch {}
+    return () => window.removeEventListener("scroll", on);
   }, []);
-
+  useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => {
-    if (localStorage.getItem("token")) {
-      try {
-        const cached = localStorage.getItem("user");
-        if (cached) {
-          const u = JSON.parse(cached);
-          setUserName(u.name || "");
-          setUserImage(u.profileImage || "");
-        }
-      } catch {
-        // corrupt cached user blob — the header just falls back to initials
-      }
-    }
-  }, []);
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled
-          ? "glass shadow-lg shadow-accent-pink/5"
-          : "bg-transparent"
-      )}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" onClick={() => setIsOpen(false)}>
-            <Logo priority />
-          </Link>
+    <header className={cn("fixed top-0 inset-x-0 z-50 transition-all", scrolled || open ? "bg-h-bg/85 backdrop-blur-xl border-b border-h-border" : "bg-transparent border-b border-transparent")}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
+        <Link href="/" aria-label="هلا — الرئيسية" className="shrink-0"><HalaLogo size={36} /></Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                  pathname === link.href
-                    ? "text-accent-pink bg-accent-pink/10"
-                    : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+        <nav aria-label="أقسام الصفحة" className="hidden md:flex items-center gap-1 mx-auto">
+          {SECTIONS.map((l) => (
+            <Link key={l.href} href={l.href} className="px-3.5 h-9 rounded-full flex items-center text-[15px] font-semibold text-h-text2 hover:text-h-text hover:bg-h-input transition">{l.label}</Link>
+          ))}
+        </nav>
 
-          {/* Desktop CTA */}
-          <div className="hidden lg:flex items-center gap-3">
-            <a
-              href={APP_STORE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-hover/50 hover:bg-bg-hover text-text-muted hover:text-text-primary transition-colors text-xs"
-            >
-              <Smartphone size={14} />
-              <span>App Store</span>
-            </a>
+        <div className="flex items-center gap-2 ms-auto md:ms-0">
+          <button onClick={() => set(dark ? "light" : "dark")} aria-label={dark ? "الوضع الفاتح" : "الوضع الداكن"}
+            className="hidden sm:flex w-10 h-10 rounded-full items-center justify-center text-h-text2 hover:bg-h-input hover:text-h-text transition">
+            {dark ? <Sun size={19} /> : <Moon size={19} />}
+          </button>
 
-            <a
-              href={GOOGLE_PLAY_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-hover/50 hover:bg-bg-hover text-text-muted hover:text-text-primary transition-colors text-xs"
-            >
-              <Smartphone size={14} />
-              <span>Google Play</span>
-            </a>
-
-            <Link href="/chats" className="auth-in flex items-center gap-2">
-              <Button size="sm">
-                <MessageCircle size={16} />
-                محادثاتي
-              </Button>
-              <Avatar src={userImage} name={userName} size="sm" />
+          {/* زائر */}
+          <span className="auth-out flex items-center gap-2">
+            <Link href="/login" className="hidden sm:flex h-10 px-4 rounded-full items-center text-[15px] font-bold text-h-text hover:bg-h-input transition">دخول</Link>
+            <Link href="/register" className="h-10 px-5 rounded-full flex items-center text-[15px] font-bold text-white h-gradient shadow-[0_6px_18px_-6px_var(--h-primary)] hover:brightness-105 transition">ابدأ مجاناً</Link>
+          </span>
+          {/* مسجّل */}
+          <span className="auth-in flex items-center gap-2">
+            <Link href="/chats" className="h-10 px-4 rounded-full flex items-center gap-2 text-[15px] font-bold text-white h-gradient">
+              <MessageCircle size={17} /> محادثاتي
             </Link>
+            {me && <Link href="/profile" aria-label="ملفي" className="hidden sm:block"><Avatar src={me.profileImage} name={me.name} size="sm" /></Link>}
+          </span>
 
-            <div className="auth-out flex items-center gap-3">
-              <Link href="/login">
-                <Button variant="ghost" size="sm">
-                  تسجيل الدخول
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button size="sm">إنشاء حساب</Button>
-              </Link>
-            </div>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label={isOpen ? "إغلاق القائمة" : "فتح القائمة"}
-            aria-expanded={isOpen}
-            className="lg:hidden text-text-primary p-2"
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          <button onClick={() => setOpen((v) => !v)} aria-label={open ? "إغلاق القائمة" : "القائمة"} aria-expanded={open}
+            className="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-h-text hover:bg-h-input">
+            {open ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="lg:hidden glass border-t border-border animate-fade-in-up">
-          <div className="px-4 py-4 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors",
-                  pathname === link.href
-                    ? "text-accent-pink bg-accent-pink/10"
-                    : "text-text-secondary hover:bg-bg-hover"
-                )}
-              >
-                {link.icon && <link.icon size={18} />}
-                {link.label}
-              </Link>
+      {open && (
+        <div className="md:hidden h-[calc(100dvh-64px)] overflow-y-auto bg-h-bg px-4 pb-8 h-fade">
+          <nav aria-label="القائمة" className="py-3 space-y-1">
+            {SECTIONS.map((l) => (
+              <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="flex h-12 px-4 rounded-xl items-center text-lg font-bold hover:bg-h-input">{l.label}</Link>
             ))}
-
-            <a
-              href={APP_STORE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-success hover:bg-bg-hover transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              <Smartphone size={18} />
-              حمّل من App Store
-            </a>
-
-            <a
-              href={GOOGLE_PLAY_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-success hover:bg-bg-hover transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              <Smartphone size={18} />
-              حمّل من Google Play
-            </a>
-
-            <div className="pt-3 flex flex-col gap-2">
-              <Link
-                href="/chats"
-                className="auth-in"
-                onClick={() => setIsOpen(false)}
-              >
-                <Button className="w-full">
-                  <MessageCircle size={18} />
-                  ادخل محادثاتك
-                </Button>
-              </Link>
-
-              <div className="auth-out flex flex-col gap-2">
-                <Link href="/login" onClick={() => setIsOpen(false)}>
-                  <Button variant="outline" className="w-full">
-                    تسجيل الدخول
-                  </Button>
-                </Link>
-                <Link href="/register" onClick={() => setIsOpen(false)}>
-                  <Button className="w-full">إنشاء حساب</Button>
-                </Link>
-              </div>
-            </div>
+          </nav>
+          <div className="h-px bg-h-divider my-2" />
+          <div className="py-2 grid grid-cols-2 gap-1">
+            {MORE.map((l) => (
+              <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="flex h-11 px-4 rounded-xl items-center text-[15px] font-semibold text-h-text2 hover:bg-h-input">{l.label}</Link>
+            ))}
           </div>
+          <div className="auth-out mt-4 grid gap-2">
+            <Link href="/register" className="h-12 rounded-xl flex items-center justify-center font-bold text-white h-gradient">ابدأ مجاناً</Link>
+            <Link href="/login" className="h-12 rounded-xl flex items-center justify-center font-bold bg-h-input">لدي حساب — دخول</Link>
+          </div>
+          <div className="mt-6">
+            <p className="text-sm font-bold text-h-text2 mb-3">أو حمّل التطبيق</p>
+            <StoreBadges />
+          </div>
+          <button onClick={() => set(dark ? "light" : "dark")} className="mt-6 flex items-center gap-2 text-sm font-bold text-h-text2">
+            {dark ? <Sun size={17} /> : <Moon size={17} />} {dark ? "الوضع الفاتح" : "الوضع الداكن"}
+          </button>
         </div>
       )}
     </header>
