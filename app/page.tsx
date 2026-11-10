@@ -1,7 +1,7 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AppShell from "@/components/hala/AppShell";
-import { Faq, Features, FinalCta, Hero, HowItWorks, Safety, Stats } from "@/components/landing/HomeSections";
+import { Features, FinalCta, Hero, StartHere, Stats } from "@/components/landing/HomeSections";
 
 // الرئيسية للزائر: بهوية التطبيق (فاتح/داكن). لا صور مستخدمين حقيقيين هنا —
 // المحادثة في الواجهة توضيحية (ChatMockup)، وكان «مستخدمون يتواصلون الآن» يعرض أسماء وصوراً حقيقية لكل زائر.
@@ -13,9 +13,7 @@ export default function Home() {
         <Hero />
         <Stats />
         <Features />
-        <HowItWorks />
-        <Safety />
-        <Faq />
+        <StartHere />
         <FinalCta />
       </main>
       <Footer />

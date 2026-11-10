@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
-  ArrowLeft, BadgeCheck, Ban, CircleDashed, Compass, EyeOff, Flag, Gamepad2, Globe2, Lock, MessageCircle,
-  Mic, ShieldCheck, Sparkles, Smartphone, UserPlus, Users, Zap, Heart, ChevronDown,
+  ArrowLeft, BadgeCheck, CircleDashed, Compass, Gamepad2, Globe2, MessageCircle,
+  Mic, Sparkles, Smartphone, UserPlus, Users, Zap,
 } from "lucide-react";
 import ChatMockup from "@/components/landing/ChatMockup";
 import StoreBadges from "@/components/landing/StoreBadges";
@@ -98,88 +98,39 @@ export function Features() {
   );
 }
 
-export function HowItWorks() {
+export function StartHere() {
   const steps = [
-    { icon: UserPlus, t: "أنشئ حسابك", d: "دقيقة واحدة بالبريد أو Google أو Apple." },
-    { icon: Heart, t: "اكتشف وأعجب", d: "تصفّح البطاقات، وعند الإعجاب المتبادل يحدث التطابق." },
-    { icon: MessageCircle, t: "ابدأ السالفة", d: "رسالة، صوت، أو لعبة — وأنت تتحكم بمن يراسلك." },
+    { icon: Globe2, t: "افتح chathala.com", d: "من أي متصفح على الجوال أو الكمبيوتر — لا تحتاج تنزيل أي شيء." },
+    { icon: UserPlus, t: "أنشئ حسابك", d: "بالبريد أو بحساب Google أو Apple في أقل من دقيقة، ثم أكمل عمرك ودولتك." },
+    { icon: Compass, t: "اكتشف وأعجب", d: "تصفّح البطاقات، أعجب بمن يلفتك، أو أرسل له رسالة مباشرة." },
+    { icon: MessageCircle, t: "دردش فوراً", d: "رسائلك تصل لحظياً، ومحادثاتك نفسها تجدها في تطبيق الجوال متى نزّلته." },
   ];
   return (
-    <section id="how" className="bg-h-card border-y border-h-border">
+    <section id="start" className="bg-h-card border-y border-h-border">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-24">
-        <SectionHead kicker="كيف يعمل" title="ثلاث خطوات وتبدأ" />
-        <ol className="mt-12 grid md:grid-cols-3 gap-6">
+        <SectionHead kicker="ابدأ من هنا" title="ابدأ من المتصفح الآن — بلا تنزيل" sub="هلا يعمل على الويب كما يعمل في التطبيق: حساب واحد، ومحادثاتك متزامنة بين الجوال والمتصفح." />
+        <ol className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {steps.map(({ icon: I, t, d }, i) => (
-            <li key={t} className="relative rounded-3xl bg-h-bg border border-h-border p-7">
-              <span className="absolute top-6 end-6 text-5xl font-black text-h-text/5 select-none" aria-hidden>{i + 1}</span>
-              <span className="w-12 h-12 rounded-2xl h-gradient text-white flex items-center justify-center"><I size={23} /></span>
+            <li key={t} className="relative rounded-3xl bg-h-bg border border-h-border p-6">
+              <span className="flex items-center gap-3">
+                <span className="w-11 h-11 rounded-2xl h-gradient text-white flex items-center justify-center shrink-0"><I size={21} /></span>
+                <span className="text-sm font-extrabold text-h-primary">الخطوة {i + 1}</span>
+              </span>
               <h3 className="mt-4 text-lg font-extrabold text-h-text">{t}</h3>
               <p className="mt-1.5 text-[15px] leading-7 text-h-text2">{d}</p>
             </li>
           ))}
         </ol>
-      </div>
-    </section>
-  );
-}
-
-export function Safety() {
-  const items = [
-    { icon: ShieldCheck, t: "حجب الحسابات الخارجية", d: "طلبات الانتقال لتطبيقات أخرى تُحجب تلقائياً — أكثر ما يستعمله المحتالون." },
-    { icon: Lock, t: "صور مؤقتة محمية", d: "تُفتح مرة واحدة في التطبيق، بحماية من لقطات الشاشة." },
-    { icon: Flag, t: "حظر وإبلاغ بضغطة", d: "وفريق مراجعة يتابع البلاغات ويتخذ الإجراء." },
-    { icon: EyeOff, t: "خصوصيتك بيدك", d: "أخفِ عمرك أو آخر ظهورك، أو أوقف استقبال الطلبات متى شئت." },
-    { icon: Ban, t: "للبالغين فقط", d: "هلا لمن هم 18 عاماً فأكثر، مع معايير صارمة لسلامة الأطفال." },
-  ];
-  return (
-    <section id="safety" className="max-w-6xl mx-auto px-4 sm:px-6 py-24">
-      <div className="rounded-[36px] p-8 sm:p-12 bg-[#16161A] text-white relative overflow-hidden">
-        <div className="absolute -top-24 -start-24 w-80 h-80 rounded-full bg-[#E91E8C]/30 blur-3xl" />
-        <div className="absolute -bottom-24 -end-24 w-80 h-80 rounded-full bg-[#7B2CBF]/30 blur-3xl" />
-        <div className="relative grid lg:grid-cols-[1fr_1.4fr] gap-10 items-start">
+        <div className="mt-10 rounded-3xl border border-h-border bg-h-bg p-6 sm:p-8 flex flex-col lg:flex-row items-center gap-6 justify-between text-center lg:text-start">
           <div>
-            <p className="text-sm font-bold text-[#FF8FCB]">الأمان</p>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-black leading-tight">خصوصيتك أولاً،<br />وراحتك قبل كل شيء</h2>
-            <p className="mt-4 text-white/70 leading-8">بنينا هلا ليكون مكاناً مريحاً للتعارف: أدوات واضحة تحميك، وفريق يراجع ما يصله.</p>
-            <Link href="/child-safety" className="mt-6 inline-flex items-center gap-1.5 text-sm font-bold text-white/85 hover:text-white">معايير السلامة <ArrowLeft size={16} /></Link>
+            <p className="text-xl font-extrabold text-h-text">ما تحتاجه على الويب موجود</p>
+            <p className="mt-2 text-h-text2 leading-7">الاكتشاف، المحادثات بالنصّ والصوت والصور، القصص، الأصدقاء، الألعاب، والإعدادات — وتصلك إشعارات المتصفح بالرسائل الجديدة.</p>
           </div>
-          <ul className="grid sm:grid-cols-2 gap-3">
-            {items.map(({ icon: I, t, d }) => (
-              <li key={t} className="rounded-2xl bg-white/[.06] border border-white/10 p-5">
-                <I size={22} className="text-[#FF8FCB]" />
-                <p className="mt-3 font-extrabold">{t}</p>
-                <p className="mt-1 text-sm text-white/65 leading-6">{d}</p>
-              </li>
-            ))}
-          </ul>
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            <PrimaryCta />
+            <Link href="/login" className="auth-out inline-flex h-[52px] px-6 items-center rounded-full font-bold text-h-text bg-h-card border border-h-border hover:border-h-primary/50 transition">لدي حساب</Link>
+          </div>
         </div>
-      </div>
-    </section>
-  );
-}
-
-const FAQ = [
-  { q: "هل هلا مجاني؟", a: "نعم. التسجيل والدردشة والاكتشاف مجانية. واشتراك «هلا+» اختياري يضيف مزايا مثل معرفة من أعجب بك وزوّار ملفك والقراءة الخفية." },
-  { q: "هل أستطيع استخدامه من المتصفح؟", a: "نعم — سجّل الدخول من chathala.com وستجد محادثاتك واكتشافك وقصصك كما في التطبيق، وتصل الرسائل فوراً." },
-  { q: "كيف تحمون خصوصيتي؟", a: "لا نعرض بريدك لأحد، وتتحكم بما يظهر من ملفك. والحسابات الخارجية تُحجب تلقائياً، والحظر والإبلاغ متاحان في كل محادثة." },
-  { q: "من يستطيع مراسلتي؟", a: "من تطابقت معه، أو من يرسل لك طلب محادثة تقبله أنت. ويمكنك إيقاف الطلبات أو قصرها على مشتركي هلا+ من الإعدادات." },
-  { q: "كيف أحذف حسابي أو أخفيه مؤقتاً؟", a: "من الإعدادات ← «حذف الحساب أو إخفاؤه». الإخفاء يحفظ بياناتك ولا يراها أحد حتى تعود بتسجيل الدخول." },
-];
-
-export function Faq() {
-  return (
-    <section id="faq" className="max-w-3xl mx-auto px-4 sm:px-6 pb-24">
-      <SectionHead kicker="الأسئلة" title="أسئلة شائعة" />
-      <div className="mt-10 space-y-3">
-        {FAQ.map((f) => (
-          <details key={f.q} className="group rounded-2xl bg-h-card border border-h-border open:border-h-primary/40 transition">
-            <summary className="flex items-center justify-between gap-4 cursor-pointer list-none px-5 py-4 font-extrabold text-h-text [&::-webkit-details-marker]:hidden">
-              {f.q}
-              <ChevronDown size={20} className="shrink-0 text-h-text2 transition group-open:rotate-180" />
-            </summary>
-            <p className="px-5 pb-5 -mt-1 text-[15px] leading-8 text-h-text2">{f.a}</p>
-          </details>
-        ))}
       </div>
     </section>
   );

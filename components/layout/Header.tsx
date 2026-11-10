@@ -13,9 +13,7 @@ import { cn } from "@/lib/utils";
 // روابط أقسام الرئيسية فقط في الترويسة — الصفحات الثانوية (حول/الدعم/اتصل) في القائمة والتذييل
 const SECTIONS = [
   { href: "/#features", label: "المزايا" },
-  { href: "/#how", label: "كيف يعمل" },
-  { href: "/#safety", label: "الأمان" },
-  { href: "/#faq", label: "الأسئلة" },
+  { href: "/#start", label: "ابدأ من هنا" },
 ];
 const MORE = [
   { href: "/about", label: "عن هلا" },
