@@ -25,6 +25,5 @@ export async function replyToStory(ownerId: string, storyId: string, text: strin
   const s = await chatAPI.send(convId, text, undefined, storyId);
   if (!s.success) { toast.error(s.message || "تعذّر إرسال الرد"); return false; }
   chat.fetchConversation(convId);
-  toast.success("أُرسل ردّك");
   return true;
 }
