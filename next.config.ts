@@ -66,6 +66,14 @@ const nextConfig: NextConfig = {
   async redirects() {
     // صفحات قديمة دُمجت: الطلبات والتطابقات في المحادثات، والخصوصية والإشعارات في الإعدادات
     return [
+      // نطاق واحد: www ← chathala.com (301). يُستثنى /.well-known: أبل تجلب
+      // apple-app-site-association لكل نطاق مباشرة ولا تقبل تحويلاً (روابط iOS على www)
+      {
+        source: "/:path((?!\\.well-known/).*)",
+        has: [{ type: "host", value: "www.chathala.com" }],
+        destination: "https://chathala.com/:path",
+        permanent: true,
+      },
       { source: "/requests", destination: "/chats", permanent: true },
       { source: "/matches", destination: "/chats", permanent: true },
       { source: "/settings/privacy", destination: "/settings", permanent: true },
