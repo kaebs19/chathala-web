@@ -57,6 +57,25 @@ function Body({ m, mine, onImage }: { m: Message; mine: boolean; onImage: (src: 
   return <span className="whitespace-pre-wrap break-words leading-7" dir="auto">{m.content}</span>;
 }
 
+const STORY_BG = [["#833AB4", "#E1306C"], ["#F58529", "#DD2A7B"], ["#0F2027", "#2C5364"], ["#11998E", "#38EF7D"], ["#FC466B", "#3F5EFB"], ["#000000", "#434343"], ["#F7971E", "#FFD200"], ["#8E2DE2", "#4A00E0"]];
+
+function StoryRefChip({ r, mine }: { r: NonNullable<Message["storyRef"]>; mine: boolean }) {
+  const expired = r.expiresAt ? new Date(r.expiresAt).getTime() < Date.now() : false;
+  const bg = STORY_BG[r.background || 0] || STORY_BG[0];
+  return (
+    <span className={cn("flex items-center gap-2 mb-1.5 rounded-xl p-1.5 pe-3 text-xs", mine ? "bg-white/15" : "bg-h-input")}>
+      <span className="w-9 h-12 rounded-lg overflow-hidden shrink-0 flex items-center justify-center text-[8px] text-white font-bold leading-3 text-center p-0.5"
+        style={r.kind === "text" || expired || !r.imageUrl ? { background: `linear-gradient(135deg, ${bg[0]}, ${bg[1]})` } : undefined}>
+        {!expired && r.kind !== "text" && r.imageUrl
+          // eslint-disable-next-line @next/next/no-img-element
+          ? <img src={r.imageUrl} alt="" className="w-full h-full object-cover" />
+          : r.kind === "text" && !expired ? (r.text || "").slice(0, 24) : "⌛"}
+      </span>
+      <span className="opacity-90 font-semibold">{expired ? "ردّ على قصة — القصة لم تعد متاحة" : "ردّ على قصة"}</span>
+    </span>
+  );
+}
+
 /** فقاعة الرسالة: المرسل بتدرّج الهوية (D81B7C→7B2CBF)، المستقبل بخلفية البطاقة */
 const MessageBubble = memo(function MessageBubble({ m, mine, onImage, onMenu, onRetry, showTail }: {
   m: Message; mine: boolean; onImage: (src: string) => void; onMenu: (m: Message) => void; onRetry: (m: Message) => void; showTail: boolean;
@@ -87,6 +106,7 @@ const MessageBubble = memo(function MessageBubble({ m, mine, onImage, onMenu, on
             m.local === "failed" && "opacity-70"
           )}
         >
+          {m.storyRef && !m.isDeleted && <StoryRefChip r={m.storyRef} mine={mine} />}
           {reply && (
             <span className={cn("block mb-1.5 rounded-xl px-2.5 py-1.5 text-xs border-s-[3px]", mine ? "bg-white/15 border-white/70" : "bg-h-input border-h-primary")}>
               <span className="block font-bold opacity-90">رداً على</span>

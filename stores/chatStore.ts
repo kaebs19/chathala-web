@@ -41,6 +41,7 @@ interface ChatState {
   incoming: (m: Message) => void;
   sendText: (convId: string, text: string, replyTo?: Message | null) => Promise<{ ok: boolean; message?: string; res?: Record<string, unknown> }>;
   sendImage: (convId: string, file: Blob, preview: string, dims: { width: number; height: number }) => Promise<{ ok: boolean; message?: string }>;
+  sendSticker: (convId: string, sticker: { _id: string; imageUrl: string }) => Promise<{ ok: boolean; message?: string }>;
   retry: (convId: string, tempId: string) => void;
   markRead: (convId: string) => void;
   onPartnerRead: (convId: string) => void;
@@ -170,7 +171,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       if (mine) {
         // نسختي من جهاز آخر أو صدى إرسالي — تُدمج مع المتفائلة إن وُجدت بنفس النص
         const t = get().threads[convId];
-        const temp = t?.items.find((x) => x.local === "sending" && x.type === m.type && (m.type !== "text" || x.content === m.content));
+        const temp = t?.items.find((x) => x.local === "sending" && x.type === m.type && (m.type !== "text" || x.content === m.content) && (x.imageSource === "sticker") === (m.imageSource === "sticker"));
         if (temp) return; // ردّ HTTP سيستبدلها
       }
       upsertMsg(convId, m);
@@ -217,6 +218,25 @@ export const useChatStore = create<ChatState>((set, get) => {
       }
       pendingFiles.set(tempId, { file, dims });
       putThread(convId, (t) => ({ ...t, items: t.items.map((x) => (x._id === tempId ? { ...x, local: "failed" } : x)) }));
+      return { ok: false, message: res.message };
+    },
+
+    sendSticker: async (convId, sticker) => {
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      const temp: Message = {
+        _id: tempId, conversationId: convId, sender: get().me, content: "", type: "image", imageSource: "sticker",
+        localPreview: sticker.imageUrl, createdAt: new Date().toISOString(), local: "sending",
+      };
+      upsertMsg(convId, temp);
+      const res = await chatAPI.sendSticker(convId, sticker._id);
+      const msg = (res.data as { message?: Message } | undefined)?.message;
+      if (res.success && msg) {
+        upsertMsg(convId, { ...msg, conversationId: convId }, tempId);
+        bumpConv(convId, msg, false);
+        return { ok: true };
+      }
+      // الملصق لا يُعاد إرساله (قد يكون أُزيل من اللوحة) — يُحذف مع رسالة الخادم
+      putThread(convId, (t) => ({ ...t, items: t.items.filter((x) => x._id !== tempId) }));
       return { ok: false, message: res.message };
     },
 

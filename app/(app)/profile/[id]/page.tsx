@@ -13,6 +13,9 @@ import { EmptyState, Section, Spinner } from "@/components/hala/Common";
 import { toast } from "@/components/hala/Toast";
 import { usePhotoViewer } from "@/components/hala/PhotoViewer";
 import ReportSheet from "@/components/chat/ReportSheet";
+import FriendButton from "@/components/friends/FriendButton";
+import StoryRing from "@/components/stories/StoryRing";
+import { useStoryStore } from "@/stores/storyStore";
 import { InterestChips, useInterests } from "@/lib/interests";
 import { chatAPI, exploreAPI, privacyAPI, userAPI } from "@/lib/api";
 import { useChatStore } from "@/stores/chatStore";
@@ -27,6 +30,10 @@ export default function UserProfilePage() {
   const conv = useChatStore((s) => s.conversations.find((c) => c.participants?.some((p) => idOf(p) === id)));
   const fetchConversation = useChatStore((s) => s.fetchConversation);
   const interests = useInterests();
+  const storyStatus = useStoryStore((s) => s.statuses[id]);
+  const refreshStatuses = useStoryStore((s) => s.refreshStatuses);
+  const openViewer = useStoryStore((s) => s.openViewer);
+  useEffect(() => { refreshStatuses([id]); }, [id, refreshStatuses]);
   const viewer = usePhotoViewer();
   const [u, setU] = useState<User | null>(null);
   const [state, setState] = useState<"loading" | "ok" | "missing">("loading");
@@ -133,6 +140,10 @@ export default function UserProfilePage() {
 
       <div className="px-4 pt-5">
         <div className="flex items-center gap-2 flex-wrap">
+          {!!storyStatus?.count && (
+            <StoryRing src={u.profileImage} name={u.name} size="md" count={storyStatus.count} unseen={storyStatus.hasUnseen}
+              label={`قصص ${u.name}`} onClick={() => openViewer({ ownerIds: [id], startIndex: 0 })} />
+          )}
           <h1 className="text-[26px] font-extrabold">{u.name}{age ? `، ${age}` : ""}</h1>
           <NameBadges u={u} size={20} />
         </div>
@@ -141,6 +152,7 @@ export default function UserProfilePage() {
           {u.country && <span className="flex items-center gap-1"><MapPin size={14} />{countryName(u.country)}{typeof u.distance === "number" ? ` · ${u.distance} كم` : ""}</span>}
           {u.joinDate && <span className="flex items-center gap-1"><Calendar size={14} />انضم {new Date(u.joinDate).toLocaleDateString("ar-SA", { month: "long", year: "numeric" })}</span>}
         </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2"><FriendButton userId={id} name={u.name} /></div>
         {u.likedYou && <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-h-primary bg-h-primary/10 rounded-full px-3 py-1"><Heart size={14} className="fill-h-primary" /> أُعجب بك</p>}
 
         {u.bio && <Section title="نبذة" className="mt-5"><p className="px-4 py-3 text-[15px] leading-7 whitespace-pre-wrap" dir="auto">{u.bio}</p></Section>}

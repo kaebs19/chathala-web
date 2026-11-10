@@ -177,8 +177,10 @@ export const chatAPI = {
   conversation: (id: string) => api(m(`/conversations/${id}`)),
   messages: (id: string, before?: string | null) =>
     api(m(`/messages/${id}?limit=40${before ? `&before=${before}` : ""}`)),
-  send: (conversationId: string, content: string, replyTo?: string) =>
-    api(m("/messages/send"), { body: { conversationId, content, type: "text", ...(replyTo ? { replyTo } : {}) } }),
+  send: (conversationId: string, content: string, replyTo?: string, storyId?: string) =>
+    api(m("/messages/send"), { body: { conversationId, content, type: "text", ...(replyTo ? { replyTo } : {}), ...(storyId ? { storyId } : {}) } }),
+  sendSticker: (conversationId: string, stickerId: string) =>
+    api(m("/messages/send-sticker"), { body: { conversationId, stickerId } }),
   sendImage: (conversationId: string, file: Blob, caption = "", dims?: { width: number; height: number }) => {
     const f = new FormData();
     f.append("image", file, "photo.jpg");
@@ -189,8 +191,8 @@ export const chatAPI = {
     return api(m("/messages/send-image"), { form: f });
   },
   markRead: (id: string) => api(m(`/conversations/${id}/read`), { method: "PUT" }),
-  request: (targetUserId: string, initialMessage?: string) =>
-    api(m("/conversations/request"), { body: { targetUserId, ...(initialMessage ? { initialMessage } : {}) } }),
+  request: (targetUserId: string, initialMessage?: string, storyId?: string) =>
+    api(m("/conversations/request"), { body: { targetUserId, ...(initialMessage ? { initialMessage } : {}), ...(storyId ? { storyId } : {}) } }),
   accept: (id: string) => api(m(`/conversations/${id}/accept`), { method: "PUT" }),
   reject: (id: string) => api(m(`/conversations/${id}/reject`), { method: "PUT" }),
   cancel: (id: string) => api(m(`/conversations/${id}/cancel`), { method: "PUT" }),
@@ -238,3 +240,20 @@ export const premiumAPI = {
 };
 
 export const bootstrapAPI = { get: () => api(m("/app/bootstrap")) };
+
+// ─────────────────────────────── الملصقات
+export const stickerAPI = { list: () => api(m("/stickers")) };
+
+// ─────────────────────────────── الأصدقاء
+export type FriendStatus = "none" | "friends" | "pending_sent" | "pending_received";
+export const friendAPI = {
+  bootstrap: () => api(m("/friends/bootstrap")),
+  list: () => api(m("/friends")),
+  requests: () => api(m("/friends/requests")),
+  suggestions: () => api(m("/friends/suggestions")),
+  status: (userId: string) => api(m(`/friends/status/${userId}`)),
+  request: (userId: string) => api(m("/friends/request"), { body: { userId } }),
+  accept: (friendshipId: string) => api(m(`/friends/requests/${friendshipId}/accept`), { method: "POST" }),
+  decline: (friendshipId: string) => api(m(`/friends/requests/${friendshipId}/decline`), { method: "POST" }),
+  remove: (userId: string) => api(m(`/friends/${userId}`), { method: "DELETE" }),
+};

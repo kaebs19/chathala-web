@@ -18,6 +18,7 @@ import { api, authAPI, privacyAPI } from "@/lib/api";
 import { disconnectSocket } from "@/lib/socket";
 import { useAuthStore } from "@/stores/authStore";
 import { useChatStore } from "@/stores/chatStore";
+import { useStoryStore } from "@/stores/storyStore";
 import { useTheme, type ThemePref } from "@/stores/themeStore";
 import { cn } from "@/lib/utils";
 import type { User } from "@/types";
@@ -90,6 +91,7 @@ export default function SettingsPage() {
   const doLogout = () => {
     disconnectSocket();
     useChatStore.getState().reset();
+    useStoryStore.getState().reset();
     logout();
     router.replace("/login");
   };

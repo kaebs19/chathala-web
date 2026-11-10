@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, Crown, Eye, Heart, MessageCircle, Settings, UserCircle2 } from "lucide-react";
+import { Bell, Crown, Eye, Heart, MessageCircle, Settings, UserCircle2, Users } from "lucide-react";
 import AppShell from "@/components/hala/AppShell";
 import HalaLogo from "@/components/hala/HalaLogo";
 import Avatar from "@/components/hala/Avatar";
@@ -13,6 +13,8 @@ import { useChatStore } from "@/stores/chatStore";
 import { useBadges } from "@/stores/badgeStore";
 import { usePresence } from "@/stores/presenceStore";
 import { useRealtime } from "@/hooks/useRealtime";
+import StoryHost from "@/components/stories/StoryHost";
+import { replyToStory } from "@/lib/storyReply";
 import { getToken } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +27,7 @@ const TABS = [
 ] as const;
 
 const EXTRA = [
+  { href: "/friends", icon: Users, label: "الأصدقاء" },
   { href: "/visitors", icon: Eye, label: "الزوّار" },
   { href: "/settings", icon: Settings, label: "الإعدادات" },
 ];
@@ -153,6 +156,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </aside>
 
         <main className={cn("flex-1 min-w-0", !immersive && "pb-[calc(64px+env(safe-area-inset-bottom))] lg:pb-0")}>{children}</main>
+
+        <StoryHost onReply={(owner, story, text) => replyToStory(owner._id, story._id, text)} />
 
         {/* شريط التبويب — الجوال */}
         {!immersive && (

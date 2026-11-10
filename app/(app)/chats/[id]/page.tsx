@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowRight, ChevronDown, Copy, Flag, ImagePlus, MoreVertical, Reply, SendHorizontal, Trash2, UserRound, Ban, BellOff, X, Bell } from "lucide-react";
+import { ArrowRight, ChevronDown, Copy, Flag, ImagePlus, Smile, MoreVertical, Reply, SendHorizontal, Trash2, UserRound, Ban, BellOff, X, Bell } from "lucide-react";
 import Avatar from "@/components/hala/Avatar";
 import { NameBadges } from "@/components/hala/Badges";
 import Sheet, { Confirm } from "@/components/hala/Sheet";
@@ -12,6 +12,9 @@ import { Spinner } from "@/components/hala/Common";
 import { toast } from "@/components/hala/Toast";
 import MessageBubble from "@/components/chat/MessageBubble";
 import ReportSheet from "@/components/chat/ReportSheet";
+import StickerPanel from "@/components/chat/StickerPanel";
+import { useStickers } from "@/lib/stickers";
+import { useAuthStore } from "@/stores/authStore";
 import { blockStateOf, partnerOf } from "@/components/chat/ConversationList";
 import { useChatStore, senderIdOf } from "@/stores/chatStore";
 import { usePresence } from "@/stores/presenceStore";
@@ -54,6 +57,8 @@ export default function ChatRoomPage() {
   const [promo, setPromo] = useState<{ title?: string; message?: string; serverMessage?: string } | null>(null);
   const [atBottom, setAtBottom] = useState(true);
   const [missing, setMissing] = useState(false);
+  const [stickers, setStickers] = useState(false);
+  const premium = useAuthStore((s) => !!s.user?.isPremium);
 
   const scroller = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -353,9 +358,12 @@ export default function ChatRoomPage() {
             <div className="flex items-end gap-2 p-2.5 sm:p-3">
               <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => pickImage(e.target.files?.[0])} />
               <button onClick={() => fileRef.current?.click()} aria-label="إرسال صورة" className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-h-primary hover:bg-h-primary/10"><ImagePlus size={23} /></button>
+              <button onClick={() => setStickers((v) => !v)} aria-label="الملصقات" aria-pressed={stickers}
+                className={cn("w-11 h-11 shrink-0 rounded-full flex items-center justify-center hover:bg-h-primary/10", stickers ? "text-h-primary bg-h-primary/10" : "text-h-text2")}><Smile size={23} /></button>
               <textarea
                 ref={inputRef} value={text} rows={1} maxLength={2000}
                 onChange={(e) => onType(e.target.value)} onPaste={onPaste}
+                onFocus={() => setStickers(false)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing && window.matchMedia("(pointer: fine)").matches) { e.preventDefault(); send(); } }}
                 placeholder="اكتب رسالة…" aria-label="الرسالة" dir="auto"
                 className="flex-1 resize-none h-no-scrollbar max-h-36 min-h-11 py-2.5 px-4 rounded-[22px] bg-h-input outline-none border-[1.5px] border-transparent focus:border-h-primary/50 text-[15px] leading-6"
@@ -367,6 +375,14 @@ export default function ChatRoomPage() {
                 <SendHorizontal size={21} className="-scale-x-100" />
               </button>
             </div>
+            {stickers && (
+              <StickerPanel userId={me} premium={premium} onPick={async (s) => {
+                setAtBottom(true);
+                pushRecentSticker(me, s);
+                const out = await st().sendSticker(id, s);
+                if (!out.ok) toast.error(out.message || "تعذّر إرسال الملصق");
+              }} />
+            )}
           </>
         )}
       </div>
@@ -437,6 +453,10 @@ export default function ChatRoomPage() {
       )}
     </div>
   );
+}
+
+function pushRecentSticker(me: string, s: { _id: string; imageUrl: string }) {
+  useStickers.getState().pushRecent(me, s);
 }
 
 function MenuItem({ icon: Icon, label, onClick, danger }: { icon: React.ElementType; label: string; onClick: () => void; danger?: boolean }) {

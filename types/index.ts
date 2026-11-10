@@ -62,6 +62,8 @@ export interface Message {
   disappearing?: Disappearing | null;
   replyTo?: { _id: string; content?: string; type?: string; sender?: User | string } | null;
   reactions?: { user?: string; userId?: string; emoji: string }[];
+  /** رد على قصة: لقطة بلا نسخة من الصورة بعد انتهائها */
+  storyRef?: { kind?: "image" | "text"; text?: string | null; background?: number; imageUrl?: string | null; expiresAt?: string } | null;
   isRead?: boolean;
   isDelivered?: boolean;
   isDeleted?: boolean;

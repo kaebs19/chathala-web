@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Camera, Crown, Eye, Pencil, Plus, Settings, Trash2, Calendar, MapPin, Lock } from "lucide-react";
+import { Camera, Crown, Eye, Users, Pencil, Plus, Settings, Trash2, Calendar, MapPin, Lock } from "lucide-react";
 import Avatar from "@/components/hala/Avatar";
 import { NameBadges } from "@/components/hala/Badges";
 import Button from "@/components/hala/Button";
@@ -11,6 +11,8 @@ import { IconButton, Row, Section, Spinner, TopBar } from "@/components/hala/Com
 import { toast } from "@/components/hala/Toast";
 import { usePhotoViewer } from "@/components/hala/PhotoViewer";
 import { InterestChips, useInterests } from "@/lib/interests";
+import { useStoryStore } from "@/stores/storyStore";
+import { STORY_BACKGROUNDS } from "@/lib/storyBackgrounds";
 import { authAPI, userAPI } from "@/lib/api";
 import { compressImage } from "@/lib/image";
 import { useAuthStore, myId } from "@/stores/authStore";
@@ -29,6 +31,8 @@ export default function MyProfilePage() {
   const avatarRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const viewer = usePhotoViewer();
+  const { mine: stories, max: storyMax, refreshMine, openViewer, openComposer } = useStoryStore();
+  useEffect(() => { refreshMine(); }, [refreshMine]);
   const id = myId(user);
 
   const loadGallery = async () => {
@@ -112,6 +116,30 @@ export default function MyProfilePage() {
           </div>
         </Link>
 
+        {/* قصصي */}
+        <Section title={`قصصي (${stories.length}/${storyMax})`} className="mt-6">
+          <div className="p-3 flex gap-2 overflow-x-auto h-no-scrollbar">
+            {stories.map((s, i) => {
+              const bg = STORY_BACKGROUNDS[s.background || 0] || STORY_BACKGROUNDS[0];
+              return (
+                <button key={s._id} onClick={() => openViewer({ ownerIds: [id], startIndex: i, mine: true })} aria-label="عرض القصة"
+                  className="relative w-20 aspect-[9/16] rounded-xl overflow-hidden shrink-0 bg-h-chip">
+                  {s.kind === "text"
+                    ? <span className="absolute inset-0 flex items-center justify-center p-1.5 text-[9px] text-white font-bold text-center leading-3" style={{ background: `linear-gradient(135deg, ${bg[0]}, ${bg[1]})` }}>{(s.text || "").slice(0, 40)}</span>
+                    // eslint-disable-next-line @next/next/no-img-element
+                    : <img src={s.imageUrl || undefined} alt="" className="w-full h-full object-cover" />}
+                  <span className="absolute bottom-1 start-1 flex items-center gap-0.5 text-[10px] text-white bg-black/50 rounded-full px-1.5"><Eye size={10} />{s.viewCount || 0}</span>
+                  {s.held && <span className="absolute top-1 inset-x-1 text-[9px] text-center text-white bg-h-warning rounded">مراجعة</span>}
+                </button>
+              );
+            })}
+            <button onClick={() => (stories.length >= storyMax && !user.isPremium ? (location.href = "/premium") : openComposer())}
+              className={`w-20 aspect-[9/16] rounded-xl shrink-0 border-2 border-dashed flex flex-col items-center justify-center gap-1 text-xs font-bold ${stories.length >= storyMax && !user.isPremium ? "border-h-gold/60 text-h-warning" : "border-h-border text-h-text2 hover:border-h-primary hover:text-h-primary"}`}>
+              {stories.length >= storyMax && !user.isPremium ? <><Crown size={20} />المزيد مع هلا+</> : <><Plus size={22} />قصة جديدة</>}
+            </button>
+          </div>
+        </Section>
+
         {/* النبذة والاهتمامات */}
         <Section title="نبذة" className="mt-6">
           <p className="px-4 py-3 text-[15px] leading-7 whitespace-pre-wrap">{user.bio || <span className="text-h-text2">لم تكتب نبذة بعد</span>}</p>
@@ -149,6 +177,7 @@ export default function MyProfilePage() {
         </Section>
 
         <Section>
+          <Row icon={Users} title="الأصدقاء" href="/friends" color="#10B981" />
           <Row icon={Eye} title="زوّار ملفي" href="/visitors" color="#8B5CF6" />
           <Row icon={Settings} title="الإعدادات" href="/settings" color="#6E6E78" />
         </Section>

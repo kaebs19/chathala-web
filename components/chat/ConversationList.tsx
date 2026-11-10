@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Check, CheckCheck, Image as ImageIcon, Inbox, MessageCircle, Search, BellOff } from "lucide-react";
 import Avatar from "@/components/hala/Avatar";
+import StoryBar from "@/components/stories/StoryBar";
 import { NameBadges } from "@/components/hala/Badges";
 import { Chip, EmptyState, Spinner, TopBar } from "@/components/hala/Common";
 import { useChatStore, senderIdOf } from "@/stores/chatStore";
@@ -80,6 +81,7 @@ export default function ConversationList() {
       } />
 
       <div className="flex-1 overflow-y-auto h-scroll">
+        {tab === "all" && !q && <div className="border-b border-h-divider"><StoryBar /></div>}
         {!loaded && !conversations.length ? (
           <div className="py-16 flex justify-center"><Spinner /></div>
         ) : !list.length ? (
