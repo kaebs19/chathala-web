@@ -179,10 +179,29 @@ export const chatAPI = {
     api(m(`/messages/${id}?limit=40${before ? `&before=${before}` : ""}`)),
   send: (conversationId: string, content: string, replyTo?: string, storyId?: string) =>
     api(m("/messages/send"), { body: { conversationId, content, type: "text", ...(replyTo ? { replyTo } : {}), ...(storyId ? { storyId } : {}) } }),
+  sendAudio: (conversationId: string, file: File, duration: number, waveform: number[]) => {
+    const f = new FormData();
+    f.append("audio", file, file.name);
+    f.append("conversationId", conversationId);
+    f.append("duration", String(duration));
+    f.append("waveform", JSON.stringify(waveform));
+    return api(m("/messages/send-audio"), { form: f });
+  },
+  sendVideo: (conversationId: string, file: File, duration: number, mode: "once" | "24h", dims: { width: number; height: number }) => {
+    const f = new FormData();
+    f.append("video", file, file.name);
+    f.append("conversationId", conversationId);
+    f.append("duration", String(duration));
+    f.append("mode", mode);
+    f.append("width", String(dims.width));
+    f.append("height", String(dims.height));
+    return api(m("/messages/send-video"), { form: f });
+  },
   sendSticker: (conversationId: string, stickerId: string) =>
     api(m("/messages/send-sticker"), { body: { conversationId, stickerId } }),
-  sendImage: (conversationId: string, file: Blob, caption = "", dims?: { width: number; height: number }) => {
+  sendImage: (conversationId: string, file: Blob, caption = "", dims?: { width: number; height: number }, disappearingSeconds?: number) => {
     const f = new FormData();
+    if (disappearingSeconds) f.append("disappearingDuration", String(disappearingSeconds));
     f.append("image", file, "photo.jpg");
     f.append("conversationId", conversationId);
     f.append("imageSource", "gallery");
@@ -191,6 +210,7 @@ export const chatAPI = {
     return api(m("/messages/send-image"), { form: f });
   },
   markRead: (id: string) => api(m(`/conversations/${id}/read`), { method: "PUT" }),
+  listened: (messageId: string) => api(m(`/messages/${messageId}/listened`), { method: "POST" }),
   request: (targetUserId: string, initialMessage?: string, storyId?: string) =>
     api(m("/conversations/request"), { body: { targetUserId, ...(initialMessage ? { initialMessage } : {}), ...(storyId ? { storyId } : {}) } }),
   accept: (id: string) => api(m(`/conversations/${id}/accept`), { method: "PUT" }),

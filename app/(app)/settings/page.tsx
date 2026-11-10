@@ -149,7 +149,7 @@ export default function SettingsPage() {
         <Section title="الحساب">
           <Row icon={Crown} color="#F5B301" title="هلا+" subtitle={premium ? "اشتراكك فعّال" : "المزايا والأسعار"} href="/premium" />
           <Row icon={KeyRound} color="#6366F1" title="تغيير كلمة المرور" onClick={() => setSheet("password")} />
-          <Row icon={Smartphone} color="#6E6E78" title="إعدادات الإشعارات" subtitle="إشعارات الجوال تُضبط من تطبيق هلا" href="/download" />
+          <Row icon={Smartphone} color="#6E6E78" title="الإشعارات" subtitle="المتصفح وتطبيق الجوال" href="/settings/notifications" />
         </Section>
 
         <Section title="عن هلا">

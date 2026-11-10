@@ -1,7 +1,8 @@
 "use client";
 
 import { memo } from "react";
-import { AlertCircle, Check, CheckCheck, Clock, EyeOff, Gamepad2, MapPin, Mic, Smartphone, Video } from "lucide-react";
+import { AlertCircle, Check, CheckCheck, Clock, EyeOff, Gamepad2, MapPin, Mic, Smartphone, Timer, Video } from "lucide-react";
+import VoicePlayer from "@/components/chat/VoicePlayer";
 import type { Message } from "@/types";
 import { cn, formatTime, getImageUrl } from "@/lib/utils";
 
@@ -11,6 +12,34 @@ function Ticks({ m }: { m: Message }) {
   if (m.isRead) return <CheckCheck size={15} className="text-[#7DD3FC]" aria-label="مقروءة" />;
   if (m.isDelivered) return <CheckCheck size={15} className="opacity-80" aria-label="وصلت" />;
   return <Check size={15} className="opacity-80" aria-label="أُرسلت" />;
+}
+
+/** رسالة الموقع: نصّ «📍 lat,lng|العنوان» (كما في iOS: isLocationMessage) */
+export function parseLocation(c?: string): { lat: number; lng: number; address: string } | null {
+  if (!c || !c.startsWith("📍 ") || !c.includes(",") || !c.includes("|")) return null;
+  const [coord, ...rest] = c.slice(3).split("|");
+  const [a, b] = coord.split(",").map(Number);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+  return { lat: a, lng: b, address: rest.join("|") };
+}
+
+function LocationCard({ lat, lng, address, mine }: { lat: number; lng: number; address: string; mine: boolean }) {
+  const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  // بلاطة OpenStreetMap واحدة حول النقطة (بلا مفتاح API)
+  const z = 15, n = 2 ** z;
+  const x = Math.floor(((lng + 180) / 360) * n);
+  const y = Math.floor(((1 - Math.log(Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)) / Math.PI) / 2) * n);
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="block w-[240px]">
+      <span className="relative block h-32 rounded-2xl overflow-hidden bg-h-chip">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={`https://tile.openstreetmap.org/${z}/${x}/${y}.png`} alt="خريطة" className="w-full h-full object-cover" loading="lazy" />
+        <MapPin size={30} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full text-h-error fill-h-error/30" />
+      </span>
+      <span className="flex items-center gap-1.5 mt-1.5 px-1 text-sm font-semibold"><MapPin size={15} />{address || "موقع"}</span>
+      <span className={cn("block px-1 text-[11px]", mine ? "text-white/75" : "text-h-text2")}>فتح في الخرائط</span>
+    </a>
+  );
 }
 
 function AppOnly({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
@@ -43,15 +72,29 @@ function Body({ m, mine, onImage }: { m: Message; mine: boolean; onImage: (src: 
       </span>
     );
   }
-  if (m.type === "image" || (m.type === "video" && disappearing)) return <AppOnly icon={EyeOff} text={m.type === "video" ? "فيديو مؤقت" : "صورة مؤقتة"} />;
-  if (m.type === "video") return <AppOnly icon={Video} text="فيديو" />;
-  if (m.type === "audio") {
-    return m.mediaUrl ? (
-      <span className="flex items-center gap-2"><Mic size={16} className="shrink-0" />
-        <audio controls preload="none" src={getImageUrl(m.mediaUrl)} className="h-9 max-w-[220px]" />
-      </span>
-    ) : <AppOnly icon={Mic} text="رسالة صوتية" />;
+  // الوسائط المؤقتة لا تُعرض على الويب: لا يمكن فيه منع لقطة الشاشة ولا كشفها (iOS يحميها) — وعد المرسل يبقى
+  if (m.type === "image" || m.type === "video") {
+    const label = m.type === "video" ? "فيديو مؤقت" : "صورة مؤقتة";
+    if (mine) {
+      const seen = !!m.isRead;
+      return (
+        <span className="flex items-center gap-2 py-1">
+          {m.type === "video" ? <Video size={18} /> : <Timer size={18} />}
+          <span className="text-sm">{label}{m.disappearing?.mode === "24h" ? " · 24 ساعة" : m.disappearing?.mode === "once" ? " · مرة واحدة" : ""}</span>
+          <span className="text-[11px] opacity-75">{m.local ? "" : seen ? "· فُتحت" : "· أُرسلت"}</span>
+        </span>
+      );
+    }
+    if (m.disappearing?.isExpiredForMe) return <AppOnly icon={EyeOff} text={`${label} — انتهت`} />;
+    return <AppOnly icon={EyeOff} text={`${label} — افتحها من التطبيق`} />;
   }
+  if (m.type === "audio") {
+    const src = m.localPreview || (m.mediaUrl ? getImageUrl(m.mediaUrl) : "");
+    return src ? <VoicePlayer src={src} duration={m.audioDuration} waveform={m.audioWaveform} mine={mine} messageId={m._id} listened={m.isListened} />
+      : <AppOnly icon={Mic} text="رسالة صوتية" />;
+  }
+  const loc = parseLocation(m.content);
+  if (loc) return <LocationCard {...loc} mine={mine} />;
   if (m.type === "game") return <AppOnly icon={Gamepad2} text="لعبة" />;
   if (m.type === "location") return <AppOnly icon={MapPin} text="موقع" />;
   return <span className="whitespace-pre-wrap break-words leading-7" dir="auto">{m.content}</span>;

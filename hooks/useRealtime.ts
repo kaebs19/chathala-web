@@ -9,6 +9,8 @@ import { useBadges } from "@/stores/badgeStore";
 import { toast } from "@/components/hala/Toast";
 import { idOf } from "@/lib/utils";
 import type { Message } from "@/types";
+import { showBrowserNotification } from "@/lib/browserNotify";
+import { previewText } from "@/components/chat/ConversationList";
 
 /** يربط السوكِت مرة واحدة لكل جلسة ويوزّع أحداثه على المخازن. */
 export function useRealtime(enabled: boolean) {
@@ -45,7 +47,13 @@ export function useRealtime(enabled: boolean) {
       chat().incoming(m);
       // تأكيد الاستلام للمرسل (✓✓)
       const mine = idOf(m.sender) === chat().me;
-      if (!mine) s.emit("message-delivered", { messageId: m._id, conversationId: m.conversationId || idOf(m.conversation) });
+      const cid = m.conversationId || idOf(m.conversation);
+      if (!mine) s.emit("message-delivered", { messageId: m._id, conversationId: cid });
+      if (!mine && m.type !== "system") {
+        const conv = chat().conversations.find((c) => c._id === cid);
+        const sender = (typeof m.sender === "object" ? m.sender : m.senderUser) || conv?.participants.find((p) => idOf(p) !== chat().me);
+        if (!conv?.isMuted) showBrowserNotification(sender?.name || "رسالة جديدة", previewText(m) || "رسالة جديدة", { tag: cid, href: `/chats/${cid}` });
+      }
     });
 
     s.on("user-typing", (d: { conversationId?: string; isTyping?: boolean }) => {
@@ -69,6 +77,7 @@ export function useRealtime(enabled: boolean) {
 
     s.on("conversation:request", (d: { conversationId?: string; from?: { name?: string } }) => {
       if (d?.conversationId) chat().fetchConversation(String(d.conversationId));
+      showBrowserNotification("طلب محادثة جديد", d?.from?.name ? `${d.from.name} يريد محادثتك` : "لديك طلب جديد", { tag: `req-${d?.conversationId}`, href: d?.conversationId ? `/chats/${d.conversationId}` : "/chats" });
       toast.info(`طلب محادثة جديد${d?.from?.name ? ` من ${d.from.name}` : ""}`);
     });
     s.on("conversation-accepted", (d: { conversationId?: string; acceptedBy?: string }) => {
@@ -81,6 +90,15 @@ export function useRealtime(enabled: boolean) {
       (d?.conversationIds || []).forEach((id) => chat().patchConversation(String(id), { blockState: d.blockState ?? null })));
 
     const refreshBadges = () => useBadges.getState().refresh();
+    // اللعبة رسالة واحدة تتحدّث في مكانها
+    // الحمولة { messageId, conversationId, game } بلا الرسالة كاملة — دمج في الرسالة الموجودة
+    s.on("game-updated", (d: { messageId?: string; conversationId?: string; game?: Message["game"] }) => {
+      if (!d?.messageId || !d.conversationId) return;
+      const cid = String(d.conversationId);
+      const existing = chat().threads[cid]?.items.find((x) => x._id === String(d.messageId));
+      if (existing) chat().applyMessage({ ...existing, conversationId: cid, game: d.game });
+      else if (chat().active === cid) chat().loadMessages(cid);
+    });
     s.on("notification", refreshBadges);
     s.on("profile-viewed", refreshBadges);
 

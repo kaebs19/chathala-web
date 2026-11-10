@@ -40,7 +40,9 @@ interface ChatState {
   setActive: (id: string | null) => void;
   incoming: (m: Message) => void;
   sendText: (convId: string, text: string, replyTo?: Message | null) => Promise<{ ok: boolean; message?: string; res?: Record<string, unknown> }>;
-  sendImage: (convId: string, file: Blob, preview: string, dims: { width: number; height: number }) => Promise<{ ok: boolean; message?: string }>;
+  sendImage: (convId: string, file: Blob, preview: string, dims: { width: number; height: number }, disappearingSeconds?: number) => Promise<{ ok: boolean; message?: string }>;
+  sendAudio: (convId: string, v: { file: File; duration: number; waveform: number[]; url: string }) => Promise<{ ok: boolean; message?: string }>;
+  sendVideo: (convId: string, file: File, duration: number, mode: "once" | "24h", dims: { width: number; height: number }) => Promise<{ ok: boolean; message?: string }>;
   sendSticker: (convId: string, sticker: { _id: string; imageUrl: string }) => Promise<{ ok: boolean; message?: string }>;
   retry: (convId: string, tempId: string) => void;
   markRead: (convId: string) => void;
@@ -49,6 +51,8 @@ interface ChatState {
   setTyping: (convId: string, on: boolean) => void;
   onReaction: (messageId: string, reactions: Message["reactions"]) => void;
   onDeleted: (convId: string, messageId: string) => void;
+  /** تحديث رسالة في مكانها (اللعبة رسالة واحدة تتحدّث: game-updated) — تُضاف إن لم تكن موجودة */
+  applyMessage: (m: Message) => void;
   reset: () => void;
 }
 
@@ -201,15 +205,16 @@ export const useChatStore = create<ChatState>((set, get) => {
       return { ok: false, message: res.message, res: res as unknown as Record<string, unknown> };
     },
 
-    sendImage: async (convId, file, preview, dims) => {
+    sendImage: async (convId, file, preview, dims, disappearingSeconds) => {
       const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       const temp: Message = {
         _id: tempId, conversationId: convId, sender: get().me, content: "", type: "image",
         mediaWidth: dims.width, mediaHeight: dims.height, localPreview: preview,
+        disappearing: disappearingSeconds ? { enabled: true, duration: disappearingSeconds } : null,
         createdAt: new Date().toISOString(), local: "sending",
       };
       upsertMsg(convId, temp);
-      const res = await chatAPI.sendImage(convId, file, "", dims);
+      const res = await chatAPI.sendImage(convId, file, "", dims, disappearingSeconds);
       const msg = (res.data as { message?: Message } | undefined)?.message;
       if (res.success && msg) {
         upsertMsg(convId, { ...msg, conversationId: convId, localPreview: preview }, tempId);
@@ -218,6 +223,40 @@ export const useChatStore = create<ChatState>((set, get) => {
       }
       pendingFiles.set(tempId, { file, dims });
       putThread(convId, (t) => ({ ...t, items: t.items.map((x) => (x._id === tempId ? { ...x, local: "failed" } : x)) }));
+      return { ok: false, message: res.message };
+    },
+
+    sendAudio: async (convId, v) => {
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      upsertMsg(convId, {
+        _id: tempId, conversationId: convId, sender: get().me, content: "", type: "audio", localPreview: v.url,
+        audioDuration: v.duration, audioWaveform: v.waveform, createdAt: new Date().toISOString(), local: "sending",
+      });
+      const res = await chatAPI.sendAudio(convId, v.file, v.duration, v.waveform);
+      const msg = (res.data as { message?: Message } | undefined)?.message;
+      if (res.success && msg) {
+        upsertMsg(convId, { ...msg, conversationId: convId, localPreview: v.url }, tempId);
+        bumpConv(convId, msg, false);
+        return { ok: true };
+      }
+      putThread(convId, (t) => ({ ...t, items: t.items.filter((x) => x._id !== tempId) }));
+      return { ok: false, message: res.message };
+    },
+
+    sendVideo: async (convId, file, duration, mode, dims) => {
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      upsertMsg(convId, {
+        _id: tempId, conversationId: convId, sender: get().me, content: "", type: "video",
+        disappearing: { enabled: true, duration, mode }, createdAt: new Date().toISOString(), local: "sending",
+      });
+      const res = await chatAPI.sendVideo(convId, file, duration, mode, dims);
+      const msg = (res.data as { message?: Message } | undefined)?.message;
+      if (res.success && msg) {
+        upsertMsg(convId, { ...msg, conversationId: convId }, tempId);
+        bumpConv(convId, msg, false);
+        return { ok: true };
+      }
+      putThread(convId, (t) => ({ ...t, items: t.items.filter((x) => x._id !== tempId) }));
       return { ok: false, message: res.message };
     },
 
@@ -290,6 +329,12 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     onDeleted: (convId, messageId) =>
       putThread(convId, (t) => ({ ...t, items: t.items.map((m) => (m._id === messageId ? { ...m, isDeleted: true, content: "", mediaUrl: null } : m)) })),
+
+    applyMessage: (m) => {
+      const convId = convIdOf(m);
+      if (!convId || !m._id) return;
+      upsertMsg(convId, { ...m, conversationId: convId });
+    },
 
     reset: () => {
       pendingFiles.clear();

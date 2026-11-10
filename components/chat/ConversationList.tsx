@@ -36,7 +36,7 @@ export function previewText(m?: Message | null): string {
     case "location": return "📍 موقع";
     case "game": return "🎲 لعبة";
     case "sticker": return "ملصق";
-    default: return m.content || "";
+    default: return m.content?.startsWith("📍 ") && m.content.includes("|") ? "📍 موقع" : m.content || "";
   }
 }
 

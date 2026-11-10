@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowRight, ChevronDown, Copy, Flag, ImagePlus, Smile, MoreVertical, Reply, SendHorizontal, Trash2, UserRound, Ban, BellOff, X, Bell } from "lucide-react";
+import { ArrowRight, ChevronDown, Copy, Flag, Smile, Mic, Trash2 as TrashIcon, Image as ImageIcon, Timer, Video, MapPin, Gamepad2, Plus, MoreVertical, Reply, SendHorizontal, Trash2, UserRound, Ban, BellOff, X, Bell } from "lucide-react";
 import Avatar from "@/components/hala/Avatar";
 import { NameBadges } from "@/components/hala/Badges";
 import Sheet, { Confirm } from "@/components/hala/Sheet";
@@ -13,6 +13,7 @@ import { toast } from "@/components/hala/Toast";
 import MessageBubble from "@/components/chat/MessageBubble";
 import ReportSheet from "@/components/chat/ReportSheet";
 import StickerPanel from "@/components/chat/StickerPanel";
+import { GameCard, GamePickerSheet } from "@/components/chat/games";
 import { useStickers } from "@/lib/stickers";
 import { useAuthStore } from "@/stores/authStore";
 import { blockStateOf, partnerOf } from "@/components/chat/ConversationList";
@@ -21,6 +22,7 @@ import { usePresence } from "@/stores/presenceStore";
 import { emitSocket } from "@/hooks/useRealtime";
 import { chatAPI, privacyAPI } from "@/lib/api";
 import { compressImage } from "@/lib/image";
+import { VoiceRecorder, VOICE_MAX_SECONDS } from "@/lib/voice";
 import { cn, idOf, isRecentlyActive, lastSeenText } from "@/lib/utils";
 import type { Message } from "@/types";
 
@@ -58,6 +60,15 @@ export default function ChatRoomPage() {
   const [atBottom, setAtBottom] = useState(true);
   const [missing, setMissing] = useState(false);
   const [stickers, setStickers] = useState(false);
+  const [attach, setAttach] = useState(false);
+  const [pending, setPending] = useState<null | { kind: "ephemeral-photo"; file: File } | { kind: "video"; file: File; duration: number; dims: { width: number; height: number } }>(null);
+  const [recording, setRecording] = useState<{ startedAt: number; level: number } | null>(null);
+  const [recTick, setRecTick] = useState(0);
+  const [locating, setLocating] = useState(false);
+  const recorder = useRef<VoiceRecorder | null>(null);
+  const [games, setGames] = useState(false);
+  const ephemeralRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
   const premium = useAuthStore((s) => !!s.user?.isPremium);
 
   const scroller = useRef<HTMLDivElement>(null);
@@ -191,6 +202,98 @@ export default function ChatRoomPage() {
     if (f && canSend) { e.preventDefault(); pickImage(f); }
   };
 
+  // ── الصوت
+  const startRecording = async () => {
+    if (!VoiceRecorder.supported()) return toast.error("متصفحك لا يدعم التسجيل");
+    const r = new VoiceRecorder();
+    try {
+      await r.start((level) => setRecording((x) => (x ? { ...x, level } : x)));
+    } catch {
+      return toast.error("اسمح باستخدام الميكروفون من إعدادات المتصفح");
+    }
+    recorder.current = r;
+    setRecording({ startedAt: Date.now(), level: 0 });
+  };
+  useEffect(() => {
+    if (!recording) return;
+    const t = setInterval(() => {
+      setRecTick(Date.now());
+      if (Date.now() - recording.startedAt >= VOICE_MAX_SECONDS * 1000) finishRecording(true);
+    }, 250);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recording?.startedAt]);
+  const cancelRecording = () => { recorder.current?.cancel(); recorder.current = null; setRecording(null); };
+  const finishRecording = async (send: boolean) => {
+    const r = recorder.current;
+    recorder.current = null;
+    setRecording(null);
+    if (!r) return;
+    if (!send) return r.cancel();
+    if (Date.now() - r.startedAt < 800) { r.cancel(); return toast.info("اضغط مطوّلاً… التسجيل قصير جداً"); }
+    try {
+      const v = await r.stop();
+      setAtBottom(true);
+      const out = await st().sendAudio(id, v);
+      if (!out.ok) toast.error(out.message || "تعذّر إرسال الرسالة الصوتية");
+    } catch { toast.error("تعذّر معالجة التسجيل"); }
+  };
+  useEffect(() => () => recorder.current?.cancel(), []);
+
+  // ── صورة مؤقتة / فيديو / موقع
+  const pickEphemeral = (f?: File | null) => {
+    if (ephemeralRef.current) ephemeralRef.current.value = "";
+    if (!f) return;
+    if (!f.type.startsWith("image/")) return toast.error("اختر صورة");
+    setPending({ kind: "ephemeral-photo", file: f });
+  };
+  const sendEphemeral = async (seconds: number) => {
+    if (pending?.kind !== "ephemeral-photo") return;
+    const f = pending.file; setPending(null);
+    try {
+      const { blob, width, height, preview } = await compressImage(f);
+      setAtBottom(true);
+      const out = await st().sendImage(id, blob, preview, { width, height }, seconds);
+      if (!out.ok && out.message) toast.error(out.message);
+    } catch { toast.error("تعذّر قراءة الصورة"); }
+  };
+  const pickVideo = async (f?: File | null) => {
+    if (videoRef.current) videoRef.current.value = "";
+    if (!f) return;
+    if (!/^video\/(mp4|quicktime)$/.test(f.type) && !/\.(mp4|mov)$/i.test(f.name)) return toast.error("الفيديو بصيغة MP4 أو MOV فقط");
+    if (f.size > 6 * 1024 * 1024) return toast.error("الفيديو أكبر من 6MB — قصّره أو أرسله من التطبيق (يضغطه تلقائياً)");
+    const url = URL.createObjectURL(f);
+    const meta = await new Promise<{ d: number; w: number; h: number } | null>((res) => {
+      const v = document.createElement("video");
+      v.preload = "metadata";
+      v.onloadedmetadata = () => res({ d: v.duration, w: v.videoWidth, h: v.videoHeight });
+      v.onerror = () => res(null);
+      v.src = url;
+    });
+    URL.revokeObjectURL(url);
+    if (!meta) return toast.error("تعذّر قراءة الفيديو");
+    if (meta.d > 15.5) return toast.error("الفيديو حتى 15 ثانية — قصّه أو أرسله من التطبيق");
+    setPending({ kind: "video", file: f, duration: Math.max(1, Math.round(meta.d)), dims: { width: meta.w, height: meta.h } });
+  };
+  const sendVideo = async (mode: "once" | "24h") => {
+    if (pending?.kind !== "video") return;
+    const p = pending; setPending(null);
+    setAtBottom(true);
+    const out = await st().sendVideo(id, p.file, p.duration, mode, p.dims);
+    if (!out.ok) toast.error(out.message || "تعذّر إرسال الفيديو");
+  };
+  const sendLocation = () => {
+    setAttach(false);
+    if (!("geolocation" in navigator)) return toast.error("متصفحك لا يدعم تحديد الموقع");
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      setLocating(false);
+      const { latitude, longitude } = pos.coords;
+      const out = await st().sendText(id, `📍 ${latitude.toFixed(5)},${longitude.toFixed(5)}|موقعي`);
+      if (!out.ok) toast.error(out.message || "تعذّر إرسال الموقع");
+    }, () => { setLocating(false); toast.error("اسمح بتحديد الموقع من إعدادات المتصفح"); }, { enableHighAccuracy: true, timeout: 15000 });
+  };
+
   // ── إجراءات الطلب
   const accept = async () => {
     setBusy(true);
@@ -299,7 +402,14 @@ export default function ChatRoomPage() {
               return (
                 <div key={m._id}>
                   {newDay && <div className="flex justify-center my-3"><span className="text-xs font-bold text-h-text2 bg-h-chip rounded-full px-3 py-1">{dayLabel(m.createdAt)}</span></div>}
-                  <MessageBubble m={m} mine={mine} onImage={setLightbox} onMenu={onMenu} onRetry={onRetry} showTail={showTail} />
+                  {m.type === "game" && m.game && !m.isDeleted ? (
+                    // بطاقة اللعبة خارج فقاعة التدرّج (ألوانها لا تتعارض)
+                    <div className={cn("flex mt-2", mine ? "justify-end" : "justify-start")}>
+                      <GameCard message={m} me={me} conversationId={id} canPlay={canSend} />
+                    </div>
+                  ) : (
+                    <MessageBubble m={m} mine={mine} onImage={setLightbox} onMenu={onMenu} onRetry={onRetry} showTail={showTail} />
+                  )}
                 </div>
               );
             })}
@@ -323,7 +433,7 @@ export default function ChatRoomPage() {
       )}
 
       {/* الشريط السفلي */}
-      <div className="shrink-0 border-t border-h-border bg-h-card pb-[env(safe-area-inset-bottom)]">
+      <div className="relative shrink-0 border-t border-h-border bg-h-card pb-[env(safe-area-inset-bottom)]">
         {pendingIn ? (
           <div className="p-4 space-y-3">
             <p className="text-sm text-center text-h-text2"><b className="text-h-text">{partner?.name}</b> يريد محادثتك</p>
@@ -357,7 +467,9 @@ export default function ChatRoomPage() {
             )}
             <div className="flex items-end gap-2 p-2.5 sm:p-3">
               <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => pickImage(e.target.files?.[0])} />
-              <button onClick={() => fileRef.current?.click()} aria-label="إرسال صورة" className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-h-primary hover:bg-h-primary/10"><ImagePlus size={23} /></button>
+              <input ref={ephemeralRef} type="file" accept="image/*" hidden onChange={(e) => pickEphemeral(e.target.files?.[0])} />
+              <input ref={videoRef} type="file" accept="video/mp4,video/quicktime,.mp4,.mov" hidden onChange={(e) => pickVideo(e.target.files?.[0])} />
+              <button onClick={() => setAttach(true)} aria-label="المرفقات" className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-h-primary hover:bg-h-primary/10"><Plus size={25} /></button>
               <button onClick={() => setStickers((v) => !v)} aria-label="الملصقات" aria-pressed={stickers}
                 className={cn("w-11 h-11 shrink-0 rounded-full flex items-center justify-center hover:bg-h-primary/10", stickers ? "text-h-primary bg-h-primary/10" : "text-h-text2")}><Smile size={23} /></button>
               <textarea
@@ -370,11 +482,28 @@ export default function ChatRoomPage() {
                 style={{ height: "auto" }}
                 onInput={(e) => { const t = e.currentTarget; t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 144) + "px"; }}
               />
-              <button onClick={send} disabled={!text.trim()} aria-label="إرسال"
-                className="w-11 h-11 shrink-0 rounded-full h-gradient text-white flex items-center justify-center disabled:opacity-40 transition active:scale-90">
-                <SendHorizontal size={21} className="-scale-x-100" />
-              </button>
+              {text.trim() ? (
+                <button onClick={send} aria-label="إرسال"
+                  className="w-11 h-11 shrink-0 rounded-full h-gradient text-white flex items-center justify-center transition active:scale-90">
+                  <SendHorizontal size={21} className="-scale-x-100" />
+                </button>
+              ) : (
+                <button onClick={startRecording} aria-label="تسجيل رسالة صوتية"
+                  className="w-11 h-11 shrink-0 rounded-full h-gradient text-white flex items-center justify-center transition active:scale-90">
+                  <Mic size={21} />
+                </button>
+              )}
             </div>
+            {recording && (
+              <div className="absolute inset-x-0 bottom-0 bg-h-card border-t border-h-border flex items-center gap-3 p-3 pb-[max(.75rem,env(safe-area-inset-bottom))] z-10" role="status" aria-label="جارٍ التسجيل">
+                <button onClick={cancelRecording} aria-label="إلغاء التسجيل" className="w-11 h-11 rounded-full bg-h-error/10 text-h-error flex items-center justify-center"><TrashIcon size={20} /></button>
+                <span className="w-3 h-3 rounded-full bg-h-error animate-pulse" />
+                <span className="font-bold tabular-nums">{(() => { const s = Math.floor(((recTick || Date.now()) - recording.startedAt) / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; })()}</span>
+                <span className="flex-1 h-8 flex items-center"><span className="h-1.5 rounded-full bg-h-primary transition-all" style={{ width: `${Math.min(100, 8 + recording.level * 160)}%` }} /></span>
+                <span className="text-xs text-h-text2 hidden sm:block">حتى {VOICE_MAX_SECONDS} ثانية</span>
+                <button onClick={() => finishRecording(true)} aria-label="إرسال التسجيل" className="w-11 h-11 rounded-full h-gradient text-white flex items-center justify-center"><SendHorizontal size={20} className="-scale-x-100" /></button>
+              </div>
+            )}
             {stickers && (
               <StickerPanel userId={me} premium={premium} onPick={async (s) => {
                 setAtBottom(true);
@@ -386,6 +515,42 @@ export default function ChatRoomPage() {
           </>
         )}
       </div>
+
+      <GamePickerSheet open={games} onClose={() => setGames(false)} conversationId={id} />
+
+      {/* المرفقات */}
+      <Sheet open={attach} onClose={() => setAttach(false)} title="إرسال">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 py-3">
+          <AttachItem icon={ImageIcon} color="#8B5CF6" label="صورة" onClick={() => { setAttach(false); fileRef.current?.click(); }} />
+          <AttachItem icon={Timer} color="#E91E8C" label="صورة مؤقتة" onClick={() => { setAttach(false); ephemeralRef.current?.click(); }} />
+          <AttachItem icon={Video} color="#EF4444" label="فيديو 15ث" onClick={() => { setAttach(false); videoRef.current?.click(); }} />
+          <AttachItem icon={MapPin} color="#10B981" label={locating ? "…" : "موقعي"} onClick={sendLocation} />
+          {canSend && <AttachItem icon={Gamepad2} color="#F59E0B" label="لعبة" onClick={() => { setAttach(false); setGames(true); }} />}
+        </div>
+      </Sheet>
+
+      <Sheet open={pending?.kind === "ephemeral-photo"} onClose={() => setPending(null)} title="صورة مؤقتة">
+        <div className="py-2 space-y-3">
+          <p className="text-sm text-h-text2 leading-7">تُفتح مرة واحدة للمدة التي تختارها ثم تختفي. لا تُعرض على الويب عند المستلم — يفتحها من التطبيق.</p>
+          <div className="grid grid-cols-3 gap-2">
+            {[5, 10, 30].map((sec) => (
+              <button key={sec} onClick={() => sendEphemeral(sec)} className="h-14 rounded-xl bg-h-input font-extrabold hover:bg-h-primary/10 hover:text-h-primary">{sec} ث</button>
+            ))}
+          </div>
+        </div>
+      </Sheet>
+
+      <Sheet open={pending?.kind === "video"} onClose={() => setPending(null)} title="فيديو مؤقت">
+        <div className="py-2 space-y-3">
+          <p className="text-sm text-h-text2 leading-7">كل فيديو مؤقت. {pending?.kind === "video" ? `المدة ${pending.duration} ث.` : ""}</p>
+          <button onClick={() => sendVideo("once")} className="w-full text-start p-4 rounded-xl bg-h-input hover:bg-h-primary/10">
+            <span className="block font-extrabold">مشاهدة واحدة</span><span className="block text-xs text-h-text2 mt-0.5">يختفي بعد أن يشاهده</span>
+          </button>
+          <button onClick={() => sendVideo("24h")} className="w-full text-start p-4 rounded-xl bg-h-input hover:bg-h-primary/10">
+            <span className="block font-extrabold">24 ساعة</span><span className="block text-xs text-h-text2 mt-0.5">يُعاد تشغيله حتى يمرّ يوم على الإرسال</span>
+          </button>
+        </div>
+      </Sheet>
 
       {/* خيارات الرسالة */}
       <Sheet open={!!menuMsg} onClose={() => setMenuMsg(null)}>
@@ -457,6 +622,15 @@ export default function ChatRoomPage() {
 
 function pushRecentSticker(me: string, s: { _id: string; imageUrl: string }) {
   useStickers.getState().pushRecent(me, s);
+}
+
+function AttachItem({ icon: Icon, color, label, onClick }: { icon: React.ElementType; color: string; label: string; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className="flex flex-col items-center gap-2 py-2 rounded-2xl hover:bg-h-input">
+      <span className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: `color-mix(in srgb, ${color} 14%, transparent)`, color }}><Icon size={26} /></span>
+      <span className="text-xs font-bold">{label}</span>
+    </button>
+  );
 }
 
 function MenuItem({ icon: Icon, label, onClick, danger }: { icon: React.ElementType; label: string; onClick: () => void; danger?: boolean }) {

@@ -36,7 +36,8 @@ const nextConfig: NextConfig = {
           // the matching feature actually ships.
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), payment=()",
+            // الميكروفون للرسائل الصوتية والموقع لإرسال «موقعي» (المرحلة 3)
+            value: "camera=(), microphone=(self), geolocation=(self), payment=()",
           },
           { key: "X-DNS-Prefetch-Control", value: "on" },
         ],
@@ -68,7 +69,6 @@ const nextConfig: NextConfig = {
       { source: "/requests", destination: "/chats", permanent: true },
       { source: "/matches", destination: "/chats", permanent: true },
       { source: "/settings/privacy", destination: "/settings", permanent: true },
-      { source: "/settings/notifications", destination: "/settings", permanent: true },
     ];
   },
   async rewrites() {

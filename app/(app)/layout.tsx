@@ -15,6 +15,7 @@ import { usePresence } from "@/stores/presenceStore";
 import { useRealtime } from "@/hooks/useRealtime";
 import StoryHost from "@/components/stories/StoryHost";
 import { replyToStory } from "@/lib/storyReply";
+import { setTitleBadge } from "@/lib/browserNotify";
 import { getToken } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -109,6 +110,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [id, setMe, loadConversations]);
 
   useRealtime(!!id);
+  const unreadTotal = useChatStore((s) => s.conversations.reduce((n, c) => n + (c.isMuted ? 0 : c.unreadCount || 0), 0));
+  useEffect(() => { setTitleBadge(unreadTotal); }, [unreadTotal, pathname]);
 
   // شاشة كاملة بلا شريط تبويب على الجوال: غرفة المحادثة وشاشات التحرير
   const immersive = /^\/chats\/[^/]+/.test(pathname) || pathname.startsWith("/profile/edit");

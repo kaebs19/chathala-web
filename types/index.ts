@@ -44,6 +44,7 @@ export interface Disappearing {
   isExpiredForMe?: boolean;
   destroyed?: boolean;
   duration?: number;
+  mode?: "once" | "24h";
 }
 
 export interface Message {
@@ -56,6 +57,9 @@ export interface Message {
   content: string;
   type: "text" | "image" | "audio" | "video" | "file" | "system" | "game" | "location" | "sticker" | string;
   mediaUrl?: string | null;
+  audioDuration?: number;
+  audioWaveform?: number[];
+  isListened?: boolean;
   mediaWidth?: number;
   mediaHeight?: number;
   imageSource?: string;
@@ -72,6 +76,8 @@ export interface Message {
   isExternalPromoBlocked?: boolean;
   createdAt: string;
   updatedAt?: string;
+  /** لعبة المحادثة (type:'game') — الحالة كلها من الخادم */
+  game?: Record<string, unknown> | null;
   /** حالة محلية للرسالة المتفائلة */
   local?: "sending" | "failed";
   localPreview?: string;
