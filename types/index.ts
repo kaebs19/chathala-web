@@ -28,7 +28,7 @@ export interface User {
   halaId?: string;
   joinDate?: string;
   createdAt?: string;
-  zodiacSign?: string | null;
+  zodiacSign?: { key?: string; labelAr?: string; labelEn?: string; emoji?: string } | string | null;
   likedYou?: boolean;
   isLiked?: boolean;
   acceptingRequests?: boolean;

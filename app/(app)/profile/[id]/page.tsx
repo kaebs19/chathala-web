@@ -157,7 +157,12 @@ export default function UserProfilePage() {
 
         {u.bio && <Section title="نبذة" className="mt-5"><p className="px-4 py-3 text-[15px] leading-7 whitespace-pre-wrap" dir="auto">{u.bio}</p></Section>}
         {!!u.interests?.length && <Section title="الاهتمامات"><div className="p-4"><InterestChips keys={u.interests} all={interests} /></div></Section>}
-        {u.zodiacSign && <Section title="البرج"><p className="px-4 py-3 text-[15px]">{u.zodiacSign}</p></Section>}
+        {u.zodiacSign && (
+          <Section title="البرج">
+            {/* كائن { labelAr, emoji } لا نصّ — عرضه مباشرة كان يُسقط الصفحة (React #31) */}
+            <p className="px-4 py-3 text-[15px]">{typeof u.zodiacSign === "string" ? u.zodiacSign : `${u.zodiacSign.emoji || ""} ${u.zodiacSign.labelAr || ""}`}</p>
+          </Section>
+        )}
       </div>
 
       {/* الإجراءات */}
