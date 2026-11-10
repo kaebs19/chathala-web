@@ -18,7 +18,7 @@ export default function PrivacyPageEn() {
           <Shield size={32} className="text-white" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-black mb-4">Privacy Policy</h1>
-        <p className="text-text-muted">Last updated: November 5, 2026</p>
+        <p className="text-text-muted">Last updated: November 10, 2026</p>
         <Link href="/privacy" className="text-accent-pink hover:underline text-sm" lang="ar">
           النسخة العربية
         </Link>
@@ -162,6 +162,13 @@ export default function PrivacyPageEn() {
               messages are disassociated from your identity. We keep security and anti-fraud records (such as the
               device identifier of violating accounts, and reports) for up to 90 days, financial records as required
               by law, and backups are erased within 30 days.
+            </li>
+            <li>
+              <strong>If your account has an active restriction when you delete it</strong> (such as a block on
+              changing your name or photo, a messaging restriction, or a suspension): we keep a one-way hashed copy
+              of the account and device identifiers together with those restrictions and their end dates, for no
+              more than 90 days. If you create a new account during that time, the remaining restrictions apply to
+              it. Nothing of this is kept for accounts without restrictions.
             </li>
           </ul>
         </PolicySection>

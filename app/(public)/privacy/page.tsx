@@ -18,7 +18,7 @@ export default function PrivacyPage() {
           <Shield size={32} className="text-white" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-black mb-4">سياسة الخصوصية</h1>
-        <p className="text-text-muted">آخر تحديث: ٥ نوفمبر ٢٠٢٦</p>
+        <p className="text-text-muted">آخر تحديث: ١٠ نوفمبر ٢٠٢٦</p>
         <Link href="/privacy/en" className="text-accent-pink hover:underline text-sm" lang="en">
           English version
         </Link>
@@ -159,6 +159,12 @@ export default function PrivacyPage() {
               <strong>عند حذف حسابك:</strong> تُحذف بيانات ملفك فوراً وتُفصل رسائلك عن هويتك. ونحتفظ بسجلّات
               الأمان ومكافحة الاحتيال (مثل معرّف الجهاز للحسابات المخالفة، والبلاغات) لمدة تصل إلى 90 يوماً،
               وبالسجلّات المالية بالقدر الذي يفرضه القانون، وتُمحى النسخ الاحتياطية خلال 30 يوماً.
+            </li>
+            <li>
+              <strong>إن كان على حسابك تقييد سارٍ عند حذفه</strong> (مثل منع تغيير الاسم أو الصورة، أو تقييد
+              المراسلة، أو التعليق): نحتفظ بنسخة مُشفّرة باتجاه واحد من معرّفات الحساب والجهاز مع تلك التقييدات
+              ومواعيد انتهائها، لمدة لا تتجاوز 90 يوماً. فإن أنشأت حساباً جديداً خلالها طُبّقت عليه التقييدات
+              المتبقية. لا يُحتفظ بشيء من ذلك لمن لا تقييد عليه.
             </li>
           </ul>
         </PolicySection>
