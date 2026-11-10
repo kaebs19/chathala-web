@@ -81,7 +81,8 @@ function Body({ m, mine, onImage }: { m: Message; mine: boolean; onImage: (src: 
   if (m.type === "image" || m.type === "video") {
     const label = m.type === "video" ? "فيديو مؤقت" : "صورة مؤقتة";
     if (mine) {
-      const seen = !!m.isRead;
+      // «فُتحت» من viewedBy (مشاهدة الوسيط) لا من isRead (قراءة المحادثة)
+      const seen = !!m.disappearing?.viewedBy?.length;
       return (
         <span className="flex items-center gap-2 py-1">
           {m.type === "video" ? <Video size={18} /> : <Timer size={18} />}

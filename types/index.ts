@@ -45,6 +45,7 @@ export interface Disappearing {
   destroyed?: boolean;
   duration?: number;
   mode?: "once" | "24h";
+  viewedBy?: { user?: string; viewedAt?: string; expired?: boolean }[];
 }
 
 export interface Message {
