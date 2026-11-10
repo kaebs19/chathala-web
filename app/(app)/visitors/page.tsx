@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Crown, Eye, Lock } from "lucide-react";
+import { Crown, Eye, Lock, UserX } from "lucide-react";
 import Button from "@/components/hala/Button";
 import { CenterSpinner, EmptyState, TopBar } from "@/components/hala/Common";
 import { VerifiedBadge } from "@/components/hala/Badges";
@@ -12,7 +12,7 @@ import { countryName } from "@/lib/countries";
 import { formatDate, getImageUrl } from "@/lib/utils";
 
 type View = {
-  viewer: { _id: string | null; name: string | null; profileImage: string | null; country?: string | null; isVerified?: boolean };
+  viewer: { _id: string | null; name: string | null; profileImage: string | null; country?: string | null; isVerified?: boolean; isDeactivatedAccount?: boolean; isSuspendedAccount?: boolean };
   createdAt: string;
 };
 type Data = { totalViews?: number; views?: View[]; page?: number; totalPages?: number; isPremiumRequired?: boolean };
@@ -63,9 +63,13 @@ export default function VisitorsPage() {
 
           <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {views.map((v, i) => {
+              // مخفي/موقوف: «مستخدم غير متاح» رمادي بلا صورة ولا رابط
+              const gone = !!(v.viewer.isDeactivatedAccount || v.viewer.isSuspendedAccount);
               const card = (
-                <div className="aspect-[3/4] bg-h-chip relative">
-                  {v.viewer.profileImage ? (
+                <div className={`aspect-[3/4] bg-h-chip relative ${gone ? "grayscale opacity-70" : ""}`}>
+                  {gone ? (
+                    <div className="w-full h-full flex items-center justify-center bg-h-chip"><UserX size={30} className="text-h-text2" /></div>
+                  ) : v.viewer.profileImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={getImageUrl(v.viewer.profileImage, "medium")} alt={v.viewer.name ? `صورة ${v.viewer.name}` : ""} loading="lazy" className="w-full h-full object-cover" />
                   ) : (
@@ -75,7 +79,7 @@ export default function VisitorsPage() {
                   )}
                   <div className="absolute inset-x-0 bottom-0 p-2.5 pt-10 bg-gradient-to-t from-black/75 to-transparent text-white">
                     <p className="font-extrabold text-sm truncate flex items-center gap-1">
-                      {v.viewer.name || "زائر مخفي"} {v.viewer.isVerified && <VerifiedBadge size={14} />}
+                      {gone ? "مستخدم غير متاح" : v.viewer.name || "زائر مخفي"} {!gone && v.viewer.isVerified && <VerifiedBadge size={14} />}
                     </p>
                     <p className="text-[11px] opacity-85 truncate">{[countryName(v.viewer.country), formatDate(v.createdAt)].filter(Boolean).join(" · ")}</p>
                   </div>
@@ -83,7 +87,7 @@ export default function VisitorsPage() {
               );
               return (
                 <li key={`${v.viewer._id || "x"}-${v.createdAt}-${i}`} className="rounded-2xl overflow-hidden border border-h-border bg-h-card">
-                  {v.viewer._id ? <Link href={`/profile/${v.viewer._id}`} className="block">{card}</Link>
+                  {gone ? card : v.viewer._id ? <Link href={`/profile/${v.viewer._id}`} className="block">{card}</Link>
                     : <Link href="/premium" className="block" aria-label="اشترك لرؤية الزائر">{card}</Link>}
                 </li>
               );

@@ -88,7 +88,7 @@ export default function AccountPage() {
             <ul className="bg-h-card border border-h-border rounded-2xl divide-y divide-h-divider">
               {([
                 [EyeOff, "لا تظهر في الاكتشاف أو البحث أو القصص أو قوائم الإعجاب والزوّار"],
-                [MessageSquareOff, "من يحادثك يرى «حساب غير متاح» ولا يستطيع مراسلتك"],
+                [MessageSquareOff, "لا أحد يستطيع مشاهدة ملفك — يظهر للآخرين «مستخدم غير متاح»، ولا يستطيع أحد مراسلتك"],
                 [BellOff, "لا تصلك إشعارات"],
                 [ArrowRightLeft, "سجّل الدخول في أي وقت فيعود حسابك كما كان: محادثاتك وتطابقاتك وصورك"],
                 [CreditCard, "اشتراك هلا+ لا يُلغى تلقائياً — ألغِه من متجر التطبيقات الذي اشتركت منه إن أردت"],

@@ -18,7 +18,11 @@ type RequestOptions = {
   signal?: AbortSignal;
   /** لا تحوّل لصفحة الدخول عند 401 (لطلبات الدخول نفسها) */
   noAuthRedirect?: boolean;
+  headers?: Record<string, string>;
 };
+
+// يُخبر الخادم أننا نعرض شاشة «حسابك مخفي»: بدونه يعيد الدخولُ الحسابَ المخفي تلقائياً
+const HIDDEN_OK = { "X-Supports-Hidden-Account": "1" };
 
 const TOKEN = "token";
 const REFRESH = "refreshToken";
@@ -71,7 +75,7 @@ async function refreshToken(): Promise<boolean> {
 }
 
 async function raw(endpoint: string, opts: RequestOptions): Promise<Response> {
-  const headers: Record<string, string> = { "X-Client-Platform": "web" };
+  const headers: Record<string, string> = { "X-Client-Platform": "web", ...(opts.headers || {}) };
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
   let body: BodyInit | undefined;
@@ -129,13 +133,15 @@ const m = (p: string) => `${MOBILE}${p}`;
 // ─────────────────────────────── المصادقة والحساب
 export const authAPI = {
   login: (email: string, password: string) =>
-    api("/auth/login", { body: { email, password, platform: "web" }, noAuthRedirect: true }),
+    api("/auth/login", { body: { email, password, platform: "web" }, noAuthRedirect: true, headers: HIDDEN_OK }),
   register: (d: { name: string; email: string; password: string }) =>
     api("/auth/register", { body: { ...d, platform: "web" }, noAuthRedirect: true }),
   google: (accessToken: string, info: { sub: string; email: string; name?: string; picture?: string }) =>
-    api("/auth/google", { body: { idToken: accessToken, platform: "web", googleUserInfo: info }, noAuthRedirect: true }),
+    api("/auth/google", { body: { idToken: accessToken, platform: "web", googleUserInfo: info }, noAuthRedirect: true, headers: HIDDEN_OK }),
   apple: (d: Record<string, unknown>) =>
-    api("/auth/apple", { body: { ...d, platform: "web" }, noAuthRedirect: true }),
+    api("/auth/apple", { body: { ...d, platform: "web" }, noAuthRedirect: true, headers: HIDDEN_OK }),
+  reactivate: (reactivationToken: string) =>
+    api("/auth/reactivate", { body: { reactivationToken, platform: "web" }, noAuthRedirect: true }),
   me: () => api("/auth/me"),
   updateProfile: (d: Record<string, unknown>) => api("/auth/update-profile", { method: "PUT", body: d }),
   uploadProfileImage: (file: File) => {

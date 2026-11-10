@@ -444,7 +444,7 @@ export default function ChatRoomPage() {
             </div>
           </div>
         ) : gone ? (
-          <p className="p-4 text-center text-sm text-h-text2">هذا الحساب غير متاح</p>
+          <p className="p-4 text-center text-sm text-h-text2">مستخدم غير متاح</p>
         ) : block_ === "iBlocked" ? (
           <div className="p-4 text-center space-y-2">
             <p className="text-sm text-h-text2">لقد حظرت هذا المستخدم</p>

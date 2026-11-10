@@ -19,6 +19,7 @@ function extract(res: ApiResult<AuthPayload>): AuthPayload {
 /** الدخول محظور/موقوف: الخادم يرسل code في 403 */
 export function authErrorMessage(res: ApiResult): string {
   const code = (res.code as string) || "";
+  if (code === "ACCOUNT_HIDDEN") return ""; // شاشة «حسابك مخفي» تتولّاه
   if (code === "ACCOUNT_BANNED") return "هذا الحساب محظور. للاستفسار تواصل مع الدعم.";
   if (code === "ACCOUNT_SUSPENDED") return res.message || "هذا الحساب موقوف مؤقتاً.";
   if (code === "DEVICE_BANNED") return "هذا الجهاز محظور.";
@@ -26,12 +27,21 @@ export function authErrorMessage(res: ApiResult): string {
   return res.message || "تعذّر تسجيل الدخول";
 }
 
+/** حساب مخفي (403 ACCOUNT_HIDDEN): الرمز في الذاكرة وحدها، صالح 15 دقيقة */
+export type HiddenAccount = {
+  reactivationToken: string;
+  hiddenAt?: string;
+  user: { id?: string; name?: string; email?: string; halaId?: string; profileImage?: string | null };
+};
+
 export function myId(u: User | null | undefined) {
   return u?._id || u?.id || "";
 }
 
 interface AuthState {
   user: User | null;
+  hidden: HiddenAccount | null;
+  clearHidden: () => void;
   ready: boolean;
   /** يقبل ردّ الدخول/التسجيل/Google/Apple ويحفظ الجلسة */
   acceptSession: (res: ApiResult) => AuthPayload | null;
@@ -43,8 +53,15 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   ready: false,
+  hidden: null,
+  clearHidden: () => set({ hidden: null }),
 
   acceptSession: (res) => {
+    if (res.code === "ACCOUNT_HIDDEN") {
+      const d = res.data as HiddenAccount | undefined;
+      if (d?.reactivationToken) set({ hidden: { reactivationToken: d.reactivationToken, hiddenAt: d.hiddenAt, user: d.user || {} } });
+      return null;
+    }
     const p = extract(res as ApiResult<AuthPayload>);
     if (!res.success || !p.token) return null;
     setTokens(p.token, p.refreshToken);

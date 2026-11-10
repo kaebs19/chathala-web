@@ -54,7 +54,7 @@ export default function UserProfilePage() {
       const user = (r.data as { user?: User } | undefined)?.user;
       if (r.success && user) {
         setU(user); setLiked(!!user.isLiked); setState("ok");
-        userAPI.recordVisit(id); // كما في iOS: فتح الملف = زيارة
+        if (!user.isDeactivatedAccount && !user.isSuspendedAccount) userAPI.recordVisit(id); // كما في iOS: فتح الملف = زيارة
       } else setState("missing");
     });
     return () => { alive = false; };
@@ -108,6 +108,9 @@ export default function UserProfilePage() {
   };
 
   if (state === "loading") return <div className="py-24 flex justify-center"><Spinner /></div>;
+  if (u && (u.isDeactivatedAccount || u.isSuspendedAccount)) {
+    return <EmptyState icon={UserX} title="مستخدم غير متاح" text="لا يمكن عرض هذا الملف حالياً." action={<Button variant="secondary" onClick={() => router.back()}>رجوع</Button>} />;
+  }
   if (state === "missing" || !u) {
     return <EmptyState icon={UserX} title="الملف غير متاح" text="ربما حذف صاحبه حسابه أو أخفاه." action={<Button variant="secondary" onClick={() => router.back()}>رجوع</Button>} />;
   }
