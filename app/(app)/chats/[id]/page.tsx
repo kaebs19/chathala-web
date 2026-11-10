@@ -116,6 +116,18 @@ export default function ChatRoomPage() {
     if (thread?.loaded) requestAnimationFrame(() => { if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight; });
   }, [thread?.loaded, id]);
 
+  // الصور تُحمَّل بعد الرسم فيطول المحتوى: ابقَ في الأسفل إن كان المستخدم فيه
+  const content = useRef<HTMLDivElement>(null);
+  const atBottomRef = useRef(true);
+  useEffect(() => { atBottomRef.current = atBottom; }, [atBottom]);
+  useEffect(() => {
+    const el = content.current, sc = scroller.current;
+    if (!el || !sc || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => { if (atBottomRef.current && prevHeight.current === null) sc.scrollTop = sc.scrollHeight; });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [thread?.loaded]);
+
   const onScroll = () => {
     const el = scroller.current;
     if (!el) return;
@@ -241,7 +253,7 @@ export default function ChatRoomPage() {
   }
 
   return (
-    <div className="h-dvh flex flex-col bg-h-bg">
+    <div className="relative h-dvh flex flex-col bg-h-bg">
       {/* الترويسة (ChatHeaderView) */}
       <header className="shrink-0 h-16 px-2 sm:px-4 flex items-center gap-2 bg-h-card/90 backdrop-blur-xl border-b border-h-border">
         <button onClick={() => router.push("/chats")} aria-label="رجوع" className="lg:hidden w-10 h-10 rounded-full flex items-center justify-center hover:bg-h-input"><ArrowRight size={22} /></button>
@@ -259,6 +271,7 @@ export default function ChatRoomPage() {
 
       {/* الرسائل */}
       <div ref={scroller} onScroll={onScroll} className="flex-1 overflow-y-auto h-scroll px-3 sm:px-6 py-3 relative" aria-live="polite">
+        <div ref={content}>
         {thread?.loadingOlder && <div className="flex justify-center py-2"><Spinner size={20} /></div>}
         {!thread?.loaded && !items.length ? (
           <div className="h-full flex items-center justify-center"><Spinner /></div>
@@ -294,6 +307,7 @@ export default function ChatRoomPage() {
             )}
           </>
         )}
+        </div>
       </div>
 
       {!atBottom && (
@@ -344,7 +358,7 @@ export default function ChatRoomPage() {
                 onChange={(e) => onType(e.target.value)} onPaste={onPaste}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing && window.matchMedia("(pointer: fine)").matches) { e.preventDefault(); send(); } }}
                 placeholder="اكتب رسالة…" aria-label="الرسالة" dir="auto"
-                className="flex-1 resize-none max-h-36 min-h-11 py-2.5 px-4 rounded-[22px] bg-h-input outline-none border-[1.5px] border-transparent focus:border-h-primary/50 text-[15px] leading-6"
+                className="flex-1 resize-none h-no-scrollbar max-h-36 min-h-11 py-2.5 px-4 rounded-[22px] bg-h-input outline-none border-[1.5px] border-transparent focus:border-h-primary/50 text-[15px] leading-6"
                 style={{ height: "auto" }}
                 onInput={(e) => { const t = e.currentTarget; t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 144) + "px"; }}
               />
