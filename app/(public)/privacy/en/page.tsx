@@ -156,6 +156,10 @@ export default function PrivacyPageEn() {
         <PolicySection ltr title="10. Data Retention">
           <ul>
             <li><strong>Your account data:</strong> for as long as your account exists.</li>
+            <li>
+              <strong>Hiding your account:</strong> your data stays stored and no one can see it until you sign in
+              again, which restores your account as it was. You can delete it permanently at any time.
+            </li>
             <li><strong>Disappearing media and stories after they end:</strong> 30 days, as described above.</li>
             <li>
               <strong>When you delete your account:</strong> your profile data is deleted immediately and your

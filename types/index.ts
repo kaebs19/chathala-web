@@ -34,6 +34,10 @@ export interface User {
   acceptingRequests?: boolean;
   premiumOnlyRequests?: boolean;
   isHidden?: boolean;
+  /** أخفى صاحبه حسابه (حساب غير متاح) — ليس عقوبة */
+  isDeactivatedAccount?: boolean;
+  isSuspendedAccount?: boolean;
+  authProvider?: string;
   hiddenLabel?: string;
   stealthMode?: boolean;
   privacySettings?: { invisibleRead?: boolean; showLastSeen?: boolean; [k: string]: unknown };

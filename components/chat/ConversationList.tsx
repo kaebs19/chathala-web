@@ -98,6 +98,8 @@ export default function ConversationList() {
               const mine = lm && senderIdOf(lm) === me;
               const isOnline = p && (online[idOf(p)] ?? isRecentlyActive(p));
               const blocked = blockStateOf(c);
+              // أخفى حسابه أو موقوف: محايد رمادي «غير متاح» (لا «محظور» لمن أخفاه بنفسه)
+              const gone = !!(p?.isDeactivatedAccount || p?.isSuspendedAccount);
               const preview = typing[c._id] ? "يكتب…" : c.status === "pending" && c.creator !== me
                 ? (c.initialMessage?.content || "يريد محادثتك")
                 : previewText(lm) || (c.status === "pending" ? "بانتظار القبول" : "ابدأ المحادثة");
@@ -105,10 +107,10 @@ export default function ConversationList() {
                 <li key={c._id}>
                   <Link href={`/chats/${c._id}`}
                     className={cn("flex items-center gap-3 px-4 py-3 transition", active ? "bg-h-primary/10" : "hover:bg-h-input/60")}>
-                    <Avatar src={blocked === "blockedMe" ? null : p?.profileImage} name={p?.name} size="md" online={!blocked && !!isOnline} premium={p?.isPremium} />
+                    <Avatar src={blocked === "blockedMe" || gone ? null : p?.profileImage} name={p?.name} size="md" online={!blocked && !gone && !!isOnline} premium={!gone && p?.isPremium} className={gone ? "grayscale opacity-60" : undefined} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className={cn("truncate text-[15px]", unread ? "font-extrabold" : "font-bold")}>{p?.name || "مستخدم"}</span>
+                        <span className={cn("truncate text-[15px]", unread ? "font-extrabold" : "font-bold", gone && "text-h-text2")}>{p?.name || "مستخدم"}</span>
                         <NameBadges u={p} size={14} />
                         {c.isMuted && <BellOff size={13} className="text-h-text2" />}
                         <span className={cn("ms-auto text-xs shrink-0", unread ? "text-h-primary font-bold" : "text-h-text2")}>
@@ -119,7 +121,7 @@ export default function ConversationList() {
                         {mine && !typing[c._id] && (lm?.isRead ? <CheckCheck size={15} className="text-h-primary shrink-0" /> : lm?.isDelivered ? <CheckCheck size={15} className="text-h-text2 shrink-0" /> : <Check size={15} className="text-h-text2 shrink-0" />)}
                         {lm?.type === "image" && !typing[c._id] && <ImageIcon size={14} className="text-h-text2 shrink-0 hidden" />}
                         <span className={cn("truncate text-sm", typing[c._id] ? "text-h-primary font-semibold" : unread ? "text-h-text font-semibold" : "text-h-text2")}>
-                          {blocked === "blockedMe" ? "غير متاح" : blocked === "iBlocked" ? "محظور" : preview}
+                          {gone || blocked === "blockedMe" ? "غير متاح" : blocked === "iBlocked" ? "محظور" : preview}
                         </span>
                         {unread > 0 && (
                           <span className="ms-auto min-w-[20px] h-5 px-1.5 rounded-full h-gradient text-white text-[11px] font-extrabold flex items-center justify-center shrink-0">{unread > 99 ? "99+" : unread}</span>

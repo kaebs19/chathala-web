@@ -150,6 +150,9 @@ export const authAPI = {
   deleteGalleryPhoto: (order: number) => api(`/auth/gallery-photo/${order}`, { method: "DELETE" }),
   changePassword: (currentPassword: string, newPassword: string) =>
     api("/auth/change-password", { method: "PUT", body: { currentPassword, newPassword } }),
+  hideAccount: () => api("/auth/hide-account", { method: "POST" }),
+  deleteAccount: (password?: string) => api("/auth/delete-account", { method: "DELETE", body: password ? { password } : {} }),
+  carryover: () => api("/auth/delete-account/carryover"),
   forgotPassword: (email: string) => api("/auth/forgot-password", { body: { email }, noAuthRedirect: true }),
   resetPassword: (email: string, resetToken: string, newPassword: string) =>
     api("/auth/reset-password", { body: { email, resetToken, newPassword }, noAuthRedirect: true }),

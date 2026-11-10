@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Ban, Clock, Crown, Eye, EyeOff, FileText, HelpCircle, KeyRound, Lock, LogOut, Mail, MapPin, Moon,
-  PauseCircle, Shield, Smartphone, Sun, SunMoon, UserCheck, Users, Cake, Globe2,
+  PauseCircle, Shield, Smartphone, UserX, Sun, SunMoon, UserCheck, Users, Cake, Globe2,
 } from "lucide-react";
 import Avatar from "@/components/hala/Avatar";
 import Button from "@/components/hala/Button";
@@ -161,6 +161,7 @@ export default function SettingsPage() {
         </Section>
 
         <Section>
+          <Row icon={UserX} color="#D32F2F" title="حذف الحساب أو إخفاؤه" href="/settings/account" />
           <Row icon={LogOut} color="#D32F2F" title="تسجيل الخروج" danger onClick={() => setAskLogout(true)} />
         </Section>
       </div>

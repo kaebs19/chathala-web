@@ -347,9 +347,10 @@ export default function ChatRoomPage() {
   const pendingIn = conv?.status === "pending" && conv.creator !== me;
   const pendingOut = conv?.status === "pending" && conv.creator === me;
   const closed = conv && ["rejected", "cancelled", "expired"].includes(conv.status || "");
-  const canSend = !!conv && !block_ && !pendingIn && !pendingOut && !closed;
-  const online = !block_ && (partnerOnline ?? isRecentlyActive(partner));
-  const status = typing ? "يكتب…" : block_ ? "" : partnerOnline ? "متصل الآن" : partnerOnline === false ? "" : lastSeenText(partner);
+  const gone = !!(partner?.isDeactivatedAccount || partner?.isSuspendedAccount);
+  const canSend = !!conv && !block_ && !gone && !pendingIn && !pendingOut && !closed;
+  const online = !block_ && !gone && (partnerOnline ?? isRecentlyActive(partner));
+  const status = typing ? "يكتب…" : gone ? "غير متاح" : block_ ? "" : partnerOnline ? "متصل الآن" : partnerOnline === false ? "" : lastSeenText(partner);
 
   if (missing) {
     return (
@@ -367,7 +368,7 @@ export default function ChatRoomPage() {
         <button onClick={() => router.push("/chats")} aria-label="رجوع" className="lg:hidden w-10 h-10 rounded-full flex items-center justify-center hover:bg-h-input"><ArrowRight size={22} /></button>
         {partner ? (
           <Link href={`/profile/${idOf(partner)}`} className="flex items-center gap-3 min-w-0 flex-1">
-            <Avatar src={block_ === "blockedMe" ? null : partner.profileImage} name={partner.name} size="sm" online={!!online} premium={partner.isPremium} />
+            <Avatar src={block_ === "blockedMe" || gone ? null : partner.profileImage} name={partner.name} size="sm" online={!!online} premium={!gone && partner.isPremium} className={gone ? "grayscale opacity-60" : undefined} />
             <span className="min-w-0">
               <span className="flex items-center gap-1.5"><span className="font-extrabold truncate">{partner.name}</span><NameBadges u={partner} size={15} /></span>
               <span className={cn("block text-xs truncate", typing ? "text-h-primary font-bold" : "text-h-text2")}>{status || " "}</span>
@@ -442,6 +443,8 @@ export default function ChatRoomPage() {
               <Button onClick={accept} loading={busy}>قبول</Button>
             </div>
           </div>
+        ) : gone ? (
+          <p className="p-4 text-center text-sm text-h-text2">هذا الحساب غير متاح</p>
         ) : block_ === "iBlocked" ? (
           <div className="p-4 text-center space-y-2">
             <p className="text-sm text-h-text2">لقد حظرت هذا المستخدم</p>
