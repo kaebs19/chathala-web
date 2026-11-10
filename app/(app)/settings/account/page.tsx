@@ -10,7 +10,7 @@ import { TopBar } from "@/components/hala/Common";
 import { toast } from "@/components/hala/Toast";
 import { authAPI } from "@/lib/api";
 import { disconnectSocket } from "@/lib/socket";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore, type HiddenAccount } from "@/stores/authStore";
 import { useChatStore } from "@/stores/chatStore";
 import { useStoryStore } from "@/stores/storyStore";
 import { cn } from "@/lib/utils";
@@ -46,8 +46,16 @@ export default function AccountPage() {
     setBusy(true);
     const r = await authAPI.hideAccount();
     setBusy(false); setAsk(null);
-    if (r.success) { toast.success(r.message || "أُخفي حسابك"); signOutLocal(); }
-    else toast.error(r.message || "تعذّر إخفاء الحساب");
+    if (!r.success) { toast.error(r.message || "تعذّر إخفاء الحساب"); return; }
+    // الردّ يحمل بيانات ACCOUNT_HIDDEN نفسها ← شاشة «حسابك مخفي» مباشرة (لا خروج لصفحة الدخول)
+    const d = r.data as HiddenAccount | undefined;
+    disconnectSocket();
+    useChatStore.getState().reset();
+    useStoryStore.getState().reset();
+    logout();
+    if (d?.reactivationToken) useAuthStore.setState({ hidden: { reactivationToken: d.reactivationToken, hiddenAt: d.hiddenAt, user: d.user || {} } });
+    else toast.success(r.message || "أُخفي حسابك");
+    router.replace("/login");
   };
 
   const del = async () => {
