@@ -91,6 +91,12 @@ export function useRealtime(enabled: boolean) {
 
     const refreshBadges = () => useBadges.getState().refresh();
     // اللعبة رسالة واحدة تتحدّث في مكانها
+    // 🎧 سمع الطرف الآخر رسالتي الصوتية
+    s.on("voice-listened", (d: { messageId?: string; conversationId?: string }) => {
+      if (!d?.messageId || !d.conversationId) return;
+      const m = chat().threads[String(d.conversationId)]?.items.find((x) => x._id === String(d.messageId));
+      if (m) chat().applyMessage({ ...m, isListened: true });
+    });
     // الحمولة { messageId, conversationId, game } بلا الرسالة كاملة — دمج في الرسالة الموجودة
     s.on("game-updated", (d: { messageId?: string; conversationId?: string; game?: Message["game"] }) => {
       if (!d?.messageId || !d.conversationId) return;

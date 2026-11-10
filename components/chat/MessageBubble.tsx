@@ -25,16 +25,21 @@ export function parseLocation(c?: string): { lat: number; lng: number; address: 
 
 function LocationCard({ lat, lng, address, mine }: { lat: number; lng: number; address: string; mine: boolean }) {
   const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-  // بلاطة OpenStreetMap واحدة حول النقطة (بلا مفتاح API)
-  const z = 15, n = 2 ** z;
-  const x = Math.floor(((lng + 180) / 360) * n);
-  const y = Math.floor(((1 - Math.log(Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)) / Math.PI) / 2) * n);
+  // بلاطات OpenStreetMap 3×3 (بلا مفتاح API) مُزاحة لتقع النقطة في وسط البطاقة تماماً
+  const z = 15, n = 2 ** z, T = 256, W = 240, H = 128;
+  const fx = ((lng + 180) / 360) * n;
+  const fy = ((1 - Math.log(Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)) / Math.PI) / 2) * n;
+  const tx = Math.floor(fx), ty = Math.floor(fy);
+  const ox = W / 2 - (fx - tx) * T, oy = H / 2 - (fy - ty) * T;
   return (
     <a href={url} target="_blank" rel="noopener noreferrer" className="block w-[240px]">
-      <span className="relative block h-32 rounded-2xl overflow-hidden bg-h-chip">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={`https://tile.openstreetmap.org/${z}/${x}/${y}.png`} alt="خريطة" className="w-full h-full object-cover" loading="lazy" />
-        <MapPin size={30} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full text-h-error fill-h-error/30" />
+      <span className="relative block h-32 rounded-2xl overflow-hidden bg-h-chip" dir="ltr">
+        {[-1, 0, 1].flatMap((dy) => [-1, 0, 1].map((dx) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={`${dx}${dy}`} src={`https://tile.openstreetmap.org/${z}/${tx + dx}/${ty + dy}.png`} alt="" loading="lazy"
+            className="absolute max-w-none" style={{ width: T, height: T, left: ox + dx * T, top: oy + dy * T }} />
+        )))}
+        <MapPin size={30} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full text-h-error fill-h-error/30" aria-label="خريطة" />
       </span>
       <span className="flex items-center gap-1.5 mt-1.5 px-1 text-sm font-semibold"><MapPin size={15} />{address || "موقع"}</span>
       <span className={cn("block px-1 text-[11px]", mine ? "text-white/75" : "text-h-text2")}>فتح في الخرائط</span>
