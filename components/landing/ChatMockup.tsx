@@ -5,7 +5,7 @@ export default function ChatMockup() {
   return (
     <div className="relative mx-auto w-[300px] sm:w-[320px]" aria-hidden>
       {/* هالة خلفية */}
-      <div className="absolute -inset-10 rounded-full bg-[radial-gradient(closest-side,color-mix(in_srgb,var(--h-primary)_28%,transparent),transparent)] blur-2xl" />
+      <div className="absolute -inset-10 rounded-full bg-[radial-gradient(closest-side,color-mix(in_srgb,var(--h-primary)_24%,transparent),transparent)]" />
 
       <div className="relative rounded-[46px] p-[10px] bg-[#16161A] shadow-[0_40px_80px_-30px_rgba(0,0,0,.55)] border border-white/10">
         <div className="hala-mock rounded-[38px] overflow-hidden bg-h-bg h-[600px] flex flex-col">

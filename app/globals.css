@@ -314,3 +314,14 @@ html[data-app][data-theme="dark"] body { --h-page-bg: #0D0010; }
 .h-float-delay { animation: h-float 6s ease-in-out 1.2s infinite; }
 @media (prefers-reduced-motion: reduce) { .h-float, .h-float-delay { animation: none; } }
 html { scroll-padding-top: 80px; }
+
+/* iPhone: Safari يكبّر الصفحة عند التركيز على حقل خطّه < 16px. على شاشات اللمس كل الحقول 16px على الأقل.
+   خارج @layer عمداً كي تغلب أدوات text-sm/text-[15px]. */
+@media (pointer: coarse) {
+  .hala input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  .hala textarea,
+  .hala select { font-size: max(16px, 1em); }
+}
+/* لا وميض رمادي عند اللمس، ولا تأخير نقرة مزدوجة */
+.hala { -webkit-tap-highlight-color: transparent; }
+.hala a, .hala button { touch-action: manipulation; }

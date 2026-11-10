@@ -27,8 +27,17 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [me, setMe] = useState<{ name?: string; profileImage?: string } | null>(null);
-  const { pref, set } = useTheme();
-  const dark = pref === "dark" || (pref === "system" && typeof document !== "undefined" && document.documentElement.dataset.theme === "dark");
+  const set = useTheme((s) => s.set);
+  // ⚠️ يُحسب بعد التركيب لا أثناء الرسم: الخادم لا يعرف الوضع، وحسابه في الرسم كان يُنتج
+  //    خطأ ترطيب (React #418) فيُعاد رسم الصفحة كلها (~3ث حجب في Lighthouse على الجوال)
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    const read = () => setDark(document.documentElement.dataset.theme === "dark");
+    read();
+    const mo = new MutationObserver(read);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => mo.disconnect();
+  }, []);
 
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 8);

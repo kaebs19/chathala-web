@@ -10,11 +10,13 @@ import {
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { APP_STORE_URL, GOOGLE_PLAY_URL } from "@/lib/links";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "تحميل التطبيق",
-  description: "حمّل تطبيق ChatHala على هاتفك أو استخدم نسخة الويب",
-};
+export const metadata: Metadata = pageMeta({
+  title: "تحميل تطبيق هلا",
+  description: "حمّل تطبيق هلا للدردشة والتعارف مجاناً على iPhone وAndroid، أو ابدأ مباشرة من المتصفح بلا تنزيل.",
+  path: "/download",
+});
 
 const features = [
   "دردشة فورية مع رسائل نصية وصور وصوت",

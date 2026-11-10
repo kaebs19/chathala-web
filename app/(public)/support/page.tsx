@@ -9,11 +9,13 @@ import {
 } from "lucide-react";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "الدعم الفني",
-  description: "مركز الدعم والمساعدة - الأسئلة الشائعة والتواصل مع فريق الدعم",
-};
+export const metadata: Metadata = pageMeta({
+  title: "الدعم والمساعدة",
+  description: "مركز مساعدة هلا: إجابات الأسئلة الشائعة عن الحساب والمحادثات والاشتراك، وطرق التواصل مع فريق الدعم.",
+  path: "/support",
+});
 
 const faqs = [
   {
@@ -34,7 +36,11 @@ const faqs = [
   },
   {
     q: "كيف أحذف حسابي؟",
-    a: "اذهب إلى الإعدادات > الحساب > حذف الحساب. يرجى العلم أن هذا الإجراء نهائي ولا يمكن التراجع عنه.",
+    a: "من الإعدادات ← «حذف الحساب أو إخفاؤه». الحذف نهائي ولا يمكن التراجع عنه، والإخفاء يحفظ بياناتك ولا يراها أحد حتى تعود بتسجيل الدخول.",
+  },
+  {
+    q: "هل أستطيع استخدام هلا من المتصفح؟",
+    a: "نعم. افتح chathala.com وسجّل دخولك بالحساب نفسه، فتجد محادثاتك واكتشافك وقصصك كما في التطبيق، وتصل الرسائل فوراً.",
   },
   {
     q: "هل بياناتي آمنة؟",
@@ -51,8 +57,15 @@ const faqs = [
 ];
 
 export default function SupportPage() {
+  // FAQPage: تظهر الأسئلة في نتائج البحث
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  };
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <div className="text-center mb-12">
         <div className="w-16 h-16 rounded-2xl gradient-bg mx-auto flex items-center justify-center mb-4">
           <HelpCircle size={32} className="text-white" />

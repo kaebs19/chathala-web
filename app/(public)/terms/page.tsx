@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { FileText } from "lucide-react";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "شروط الاستخدام",
-  description: "شروط استخدام تطبيق ChatHala - القواعد والسياسات",
-};
+  description: "شروط استخدام تطبيق هلا (ChatHala) للدردشة والتعارف: الأهلية، قواعد السلوك، والحسابات والاشتراكات.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

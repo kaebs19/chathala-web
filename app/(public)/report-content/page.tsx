@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import RemovalForm from "./RemovalForm";
+import { pageMeta } from "@/lib/seo";
 
 // طلب إزالة محتوى — لمن ليس مستخدماً في هلا أيضاً (انتحال، صور بلا إذن، محتوى مسيء، حقوق).
 // يرسل إلى POST /api/public/removal-requests، ويُراجَع من لوحة التحكم ← طلبات الإزالة.
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "طلب إزالة محتوى | Content Removal Request",
-  description:
-    "أبلغ عن حساب ينتحل شخصيتك أو يستعمل صورك، أو عن محتوى مسيء في تطبيق هلا (ChatHala) — حتى لو لم يكن لديك حساب.",
-};
+  description: "أبلغ عن حساب ينتحل شخصيتك أو يستعمل صورك، أو عن محتوى مسيء في تطبيق هلا (ChatHala) — حتى لو لم يكن لديك حساب.",
+  path: "/report-content",
+});
 
 export default function ReportContentPage() {
   return (

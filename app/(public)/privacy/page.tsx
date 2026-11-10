@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Shield } from "lucide-react";
 import PolicySection from "./PolicySection";
+import { pageMeta } from "@/lib/seo";
 
 // ⚠️ رابط سياسة الخصوصية في App Store Connect — أي تغيير في جمع البيانات في التطبيق أو السيرفر
 //    يُحدَّث هنا وفي /privacy/en وفي «App Privacy» بالمتجر معاً.
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "سياسة الخصوصية",
-  description: "سياسة الخصوصية لتطبيق هلا (ChatHala) — ما نجمعه من بيانات، وكيف نستخدمها ونحميها، ومتى نحذفها",
-};
+  description: "سياسة الخصوصية لتطبيق هلا (ChatHala) — ما نجمعه من بيانات، وكيف نستخدمها ونحميها، ومتى نحذفها.",
+  path: "/privacy", languages: { "ar": "/privacy", "en": "/privacy/en" },
+});
 
 export default function PrivacyPage() {
   return (

@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Shield } from "lucide-react";
 import PolicySection from "../PolicySection";
+import { pageMeta } from "@/lib/seo";
 
 // English version of /privacy — the App Store Connect privacy URL for the English locale.
 // Keep in sync with the Arabic page and App Store "App Privacy".
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Privacy Policy",
-  description: "Privacy Policy for Hala (ChatHala) — what we collect, how we use and protect it, and when we delete it",
-};
+  description: "Privacy Policy for Hala (ChatHala) — what we collect, how we use and protect it, and when we delete it.",
+  path: "/privacy/en", languages: { "ar": "/privacy", "en": "/privacy/en" },
+});
 
 export default function PrivacyPageEn() {
   return (

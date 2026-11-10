@@ -8,11 +8,13 @@ import {
   Lock,
 } from "lucide-react";
 import Card from "@/components/ui/Card";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "حول ChatHala",
-  description: "تعرف على تطبيق ChatHala - منصة التواصل والتعارف العربية",
-};
+export const metadata: Metadata = pageMeta({
+  title: "عن هلا",
+  description: "تعرّف على هلا (ChatHala): تطبيق دردشة وتعارف عربي يجمعك بأشخاص يشاركونك اهتماماتك — قصتنا وقيمنا وكيف نحمي مستخدمينا.",
+  path: "/about",
+});
 
 const values = [
   {

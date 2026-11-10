@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { ShieldCheck } from "lucide-react";
+import { pageMeta } from "@/lib/seo";
 
 // معايير سلامة الأطفال — النصّ نفسه في matchhala.chathala.com/child-safety (رابط Google Play).
 // المصدر الواحد: لوحة التحكم ← الإعدادات ← الصفحات (GET /api/settings/child-safety).
 // ⚠️ لا تكتب النصّ هنا: عدّله من اللوحة فتتحدّث الصفحتان معاً.
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "معايير سلامة الأطفال | Child Safety Standards",
-  description:
-    "معايير سلامة الأطفال في تطبيق هلا (ChatHala): عدم تسامح مطلق مع الاستغلال الجنسي للأطفال، التطبيق للبالغين فقط، وطريقة الإبلاغ.",
-};
+  description: "معايير سلامة الأطفال في تطبيق هلا (ChatHala): عدم تسامح مطلق مع الاستغلال الجنسي للأطفال، التطبيق للبالغين فقط، وطريقة الإبلاغ.",
+  path: "/child-safety",
+});
 
 export const revalidate = 300;
 

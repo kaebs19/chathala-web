@@ -1,25 +1,23 @@
 {
-  "name": "ChatHala - شات هلا",
-  "short_name": "ChatHala",
-  "description": "منصة تواصل اجتماعي عربية للتعارف والدردشة",
-  "start_url": "/",
+  "name": "هلا — دردشة وتعارف",
+  "short_name": "هلا",
+  "description": "دردشة وتعارف عربي — اكتشف أشخاصاً قريبين منك وابدأ محادثة فورية.",
+  "id": "/",
+  "start_url": "/chats?source=pwa",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0D0010",
-  "theme_color": "#0D0010",
+  "orientation": "portrait",
+  "background_color": "#F6F6F8",
+  "theme_color": "#E91E8C",
   "dir": "rtl",
   "lang": "ar",
+  "categories": ["social", "lifestyle"],
   "icons": [
-    {
-      "src": "/images/logo-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/images/logo.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    }
+    { "src": "/images/logo-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/images/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "المحادثات", "url": "/chats", "icons": [{ "src": "/images/logo-192.png", "sizes": "192x192" }] },
+    { "name": "الاكتشاف", "url": "/explore", "icons": [{ "src": "/images/logo-192.png", "sizes": "192x192" }] }
   ]
 }
