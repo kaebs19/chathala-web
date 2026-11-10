@@ -81,19 +81,19 @@ export default function SupportPage() {
         <Link href="/contact">
           <Card hover className="text-center">
             <Mail size={28} className="text-accent-pink mx-auto mb-3" />
-            <h3 className="font-bold">تواصل معنا</h3>
+            <h2 className="font-bold">تواصل معنا</h2>
             <p className="text-text-muted text-sm mt-1">أرسل رسالة مباشرة</p>
           </Card>
         </Link>
         <Card hover className="text-center">
           <MessageSquare size={28} className="text-success mx-auto mb-3" />
-          <h3 className="font-bold">دعم التطبيق</h3>
+          <h2 className="font-bold">دعم التطبيق</h2>
           <p className="text-text-muted text-sm mt-1">من داخل التطبيق</p>
         </Card>
         <Link href="/terms">
           <Card hover className="text-center">
             <BookOpen size={28} className="text-accent-purple mx-auto mb-3" />
-            <h3 className="font-bold">شروط الاستخدام</h3>
+            <h2 className="font-bold">شروط الاستخدام</h2>
             <p className="text-text-muted text-sm mt-1">اقرأ السياسات</p>
           </Card>
         </Link>
