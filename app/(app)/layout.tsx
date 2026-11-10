@@ -1,223 +1,168 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useEffect } from "react";
 import Link from "next/link";
-import {
-  MessageCircle,
-  Compass,
-  Heart,
-  Bell,
-  User,
-  Settings,
-  Crown,
-  LogOut,
-  UserPlus,
-} from "lucide-react";
-import Logo from "@/components/shared/Logo";
-import Avatar from "@/components/ui/Avatar";
-import { useAuthStore } from "@/stores/authStore";
-import { useNotificationStore } from "@/stores/notificationStore";
+import { usePathname, useRouter } from "next/navigation";
+import { Bell, Crown, Eye, Heart, MessageCircle, Settings, UserCircle2 } from "lucide-react";
+import AppShell from "@/components/hala/AppShell";
+import HalaLogo from "@/components/hala/HalaLogo";
+import Avatar from "@/components/hala/Avatar";
+import { Spinner } from "@/components/hala/Common";
+import { useAuthStore, myId } from "@/stores/authStore";
 import { useChatStore } from "@/stores/chatStore";
-import { useSocket } from "@/hooks/useSocket";
-import { disconnectSocket } from "@/lib/socket";
+import { useBadges } from "@/stores/badgeStore";
+import { usePresence } from "@/stores/presenceStore";
+import { useRealtime } from "@/hooks/useRealtime";
+import { getToken } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { href: "/explore", icon: Compass, label: "اكتشاف" },
-  { href: "/chats", icon: MessageCircle, label: "المحادثات", badgeKey: "chats" as const },
-  { href: "/requests", icon: UserPlus, label: "الطلبات", badgeKey: "requests" as const },
-  { href: "/notifications", icon: Bell, label: "إشعارات", badgeKey: "notifications" as const },
-  { href: "/matches", icon: Heart, label: "مطابقات" },
-  { href: "/profile", icon: User, label: "بروفايلي" },
+// التبويبات الأربعة كما في iOS (TabItem)
+const TABS = [
+  { href: "/explore", icon: Heart, label: "الاكتشاف", badge: null },
+  { href: "/chats", icon: MessageCircle, label: "المحادثات", badge: "chats" },
+  { href: "/notifications", icon: Bell, label: "الإشعارات", badge: "notifications" },
+  { href: "/profile", icon: UserCircle2, label: "ملفي", badge: null },
+] as const;
+
+const EXTRA = [
+  { href: "/visitors", icon: Eye, label: "الزوّار" },
+  { href: "/settings", icon: Settings, label: "الإعدادات" },
 ];
+
+function useBadgeCount(key: string | null) {
+  const chats = useChatStore((s) => s.conversations.reduce((n, c) => n + (c.status === "accepted" || !c.status ? c.unreadCount || 0 : 0), 0));
+  const requests = useChatStore((s) => s.conversations.filter((c) => c.status === "pending" && c.creator !== s.me).length);
+  const notif = useBadges((s) => s.notifications);
+  if (key === "chats") return chats + requests;
+  if (key === "notifications") return notif;
+  return 0;
+}
+
+function Count({ n, className }: { n: number; className?: string }) {
+  if (!n) return null;
+  return (
+    <span className={cn("min-w-[18px] h-[18px] px-1 rounded-full bg-h-error text-white text-[10px] font-extrabold flex items-center justify-center", className)}>
+      {n > 99 ? "99+" : n}
+    </span>
+  );
+}
+
+function SideLink({ href, icon: Icon, label, badge, active }: { href: string; icon: React.ElementType; label: string; badge?: string | null; active: boolean }) {
+  const n = useBadgeCount(badge || null);
+  return (
+    <Link href={href} aria-current={active ? "page" : undefined}
+      className={cn("flex items-center gap-3 h-12 px-4 rounded-xl text-[15px] font-bold transition",
+        active ? "bg-h-primary/10 text-h-primary" : "text-h-text2 hover:bg-h-input hover:text-h-text")}>
+      <Icon size={22} strokeWidth={active ? 2.4 : 2} />
+      <span className="flex-1">{label}</span>
+      <Count n={n} />
+    </Link>
+  );
+}
+
+function TabLink({ href, icon: Icon, label, badge, active }: { href: string; icon: React.ElementType; label: string; badge?: string | null; active: boolean }) {
+  const n = useBadgeCount(badge || null);
+  return (
+    <Link href={href} aria-current={active ? "page" : undefined}
+      className={cn("flex-1 flex flex-col items-center justify-center gap-0.5 h-full relative", active ? "text-h-primary" : "text-h-text2")}>
+      <span className="relative">
+        <Icon size={25} strokeWidth={active ? 2.4 : 1.9} className={active ? "fill-h-primary/15" : ""} />
+        <Count n={n} className="absolute -top-1.5 -end-2.5" />
+      </span>
+      <span className="text-[10.5px] font-bold">{label}</span>
+    </Link>
+  );
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAuthenticated, isLoading, loadUser, logout } = useAuthStore();
-  const { unreadCount, loadNotifications, reset: resetNotifications } = useNotificationStore();
-  const { conversations, totalUnread: chatUnread, loadConversations, reset: resetChat } = useChatStore();
-  const myId = user?._id || user?.id;
-
-  // Count pending requests (from others, not mine)
-  const requestsCount = conversations.filter((c) => c.status === "pending" && c.creator !== myId).length;
-  const { connected: socketConnected } = useSocket();
-  const [ready, setReady] = useState(false);
+  const { user, ready, loadUser } = useAuthStore();
+  const setMe = useChatStore((s) => s.setMe);
+  const loadConversations = useChatStore((s) => s.loadConversations);
+  const connected = usePresence((s) => s.connected);
+  const hasToken = typeof window !== "undefined" && !!getToken();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/login");
+    if (!getToken()) {
+      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
       return;
     }
-    loadUser().finally(() => setReady(true));
-    loadNotifications();
-    loadConversations();
-  }, [loadUser, router]);
+    loadUser().then((u) => {
+      if (!u && !getToken()) router.replace("/login");
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  if (!ready) {
+  const id = myId(user);
+  useEffect(() => {
+    if (!id) return;
+    setMe(id);
+    loadConversations();
+    useBadges.getState().refresh();
+    const onFocus = () => { useBadges.getState().refresh(); };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [id, setMe, loadConversations]);
+
+  useRealtime(!!id);
+
+  // شاشة كاملة بلا شريط تبويب على الجوال: غرفة المحادثة وشاشات التحرير
+  const immersive = /^\/chats\/[^/]+/.test(pathname) || pathname.startsWith("/profile/edit");
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+
+  if (!user && (!ready || hasToken)) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-accent-pink border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-text-muted">جاري التحميل...</p>
+      <AppShell>
+        <div className="min-h-dvh flex flex-col items-center justify-center gap-5">
+          <HalaLogo size={56} />
+          <Spinner />
         </div>
-      </div>
+      </AppShell>
     );
   }
-
-  if (!isAuthenticated && !isLoading) {
-    return null;
-  }
+  if (!user) return <AppShell>{null}</AppShell>;
 
   return (
-    <div className="min-h-screen flex">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-bg-secondary border-l border-border fixed right-0 top-0 bottom-0 z-40">
-        {/* Logo */}
-        <div className="p-5 border-b border-border">
-          <div className="flex items-center justify-between">
-            <Link href="/chats">
-              <Logo priority />
-            </Link>
-            <div className={cn("w-2 h-2 rounded-full", socketConnected ? "bg-success" : "bg-error animate-pulse")} title={socketConnected ? "متصل" : "غير متصل"} />
-          </div>
-        </div>
-
-        {/* User Info */}
-        <div className="p-4 border-b border-border">
-          <Link
-            href="/profile"
-            className="flex items-center gap-3 p-2 rounded-xl hover:bg-bg-hover transition-colors"
-          >
-            <Avatar
-              src={user?.profileImage}
-              name={user?.name}
-              size="md"
-              isOnline
-              isPremium={user?.isPremium}
-            />
-            <div className="min-w-0">
-              <p className="font-bold text-sm truncate">
-                {user?.name || "مستخدم"}
-              </p>
-              <p className="text-xs text-text-muted truncate">
-                {user?.email || ""}
-              </p>
-            </div>
+    <AppShell>
+      <div className="min-h-dvh lg:flex">
+        {/* شريط جانبي — سطح المكتب */}
+        <aside className="hidden lg:flex flex-col w-[264px] shrink-0 h-dvh sticky top-0 border-e border-h-border bg-h-card px-3 py-4">
+          <Link href="/explore" className="px-3 mb-5 flex items-center justify-between">
+            <HalaLogo size={38} />
+            <span className={cn("w-2 h-2 rounded-full", connected ? "bg-[#22C55E]" : "bg-h-text2/40")} title={connected ? "متصل" : "غير متصل"} />
           </Link>
-        </div>
-
-        {/* Nav */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                  isActive
-                    ? "gradient-bg text-white shadow-lg shadow-accent-pink/20"
-                    : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-                )}
-              >
-                <item.icon size={20} />
-                <span>{item.label}</span>
-                {(() => {
-                  const count =
-                    item.badgeKey === "notifications" ? unreadCount :
-                    item.badgeKey === "chats" ? chatUnread :
-                    item.badgeKey === "requests" ? requestsCount : 0;
-                  return count > 0 ? (
-                    <span className="mr-auto bg-error text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                      {count > 9 ? "9+" : count}
-                    </span>
-                  ) : null;
-                })()}
-              </Link>
-            );
-          })}
-
-          <Link
-            href="/settings"
-            className={cn(
-              "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all mt-2",
-              pathname.startsWith("/settings")
-                ? "gradient-bg text-white"
-                : "text-text-secondary hover:bg-bg-hover"
-            )}
-          >
-            <Settings size={20} />
-            <span>الإعدادات</span>
-          </Link>
-
-          {!user?.isPremium && (
-            <Link
-              href="/premium"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-warning/10 text-warning hover:bg-warning/20 transition-all mt-4"
-            >
-              <Crown size={20} />
-              <span>اشترك في Premium</span>
+          <nav className="flex flex-col gap-1" aria-label="التنقّل">
+            {TABS.map((t) => <SideLink key={t.href} {...t} active={isActive(t.href)} />)}
+            <div className="h-px bg-h-divider my-2 mx-3" />
+            {EXTRA.map((t) => <SideLink key={t.href} {...t} active={isActive(t.href)} />)}
+          </nav>
+          {!user.isPremium && (
+            <Link href="/premium" className="mt-4 mx-1 rounded-2xl p-4 bg-gradient-to-br from-[#FFD600]/20 to-[#FF8C00]/15 border border-h-gold/40">
+              <div className="flex items-center gap-2 font-extrabold text-h-text"><Crown size={20} className="text-h-gold" /> هلا+</div>
+              <p className="text-xs text-h-text2 mt-1 leading-5">اعرف من أعجب بك، وزوّارك، ومزايا أكثر</p>
             </Link>
           )}
-        </nav>
+          <Link href="/profile" className="mt-auto flex items-center gap-3 p-2 rounded-xl hover:bg-h-input">
+            <Avatar src={user.profileImage} name={user.name} size="sm" premium={user.isPremium} />
+            <span className="min-w-0">
+              <span className="block text-sm font-bold truncate">{user.name}</span>
+              <span className="block text-xs text-h-text2 truncate">{user.isPremium ? "مشترك هلا+" : "عرض الملف"}</span>
+            </span>
+          </Link>
+        </aside>
 
-        {/* Logout */}
-        <div className="p-3 border-t border-border">
-          <button
-            onClick={() => {
-              disconnectSocket();
-              resetChat();
-              resetNotifications();
-              logout();
-              router.push("/");
-            }}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-error/80 hover:bg-error/10 w-full transition-colors"
-          >
-            <LogOut size={20} />
-            <span>تسجيل الخروج</span>
-          </button>
-        </div>
-      </aside>
+        <main className={cn("flex-1 min-w-0", !immersive && "pb-[calc(64px+env(safe-area-inset-bottom))] lg:pb-0")}>{children}</main>
 
-      {/* Main Content */}
-      <main className="flex-1 lg:mr-64 pb-20 lg:pb-0">{children}</main>
-
-      {/* Mobile Bottom Nav */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass border-t border-border safe-area-bottom">
-        <div className="flex items-center justify-around h-16">
-          {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative",
-                  isActive ? "text-accent-pink" : "text-text-muted"
-                )}
-              >
-                <item.icon size={22} />
-                <span className="text-[10px] font-medium">{item.label}</span>
-                {(() => {
-                  const count =
-                    item.badgeKey === "notifications" ? unreadCount :
-                    item.badgeKey === "chats" ? chatUnread :
-                    item.badgeKey === "requests" ? requestsCount : 0;
-                  return count > 0 ? (
-                    <span className="absolute -top-0.5 right-1 bg-error text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                      {count > 9 ? "+" : count}
-                    </span>
-                  ) : null;
-                })()}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-    </div>
+        {/* شريط التبويب — الجوال */}
+        {!immersive && (
+          <nav aria-label="التبويبات" className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-h-card/90 backdrop-blur-xl border-t border-h-border pb-[env(safe-area-inset-bottom)]">
+            <div className="flex h-16 max-w-lg mx-auto">
+              {TABS.map((t) => <TabLink key={t.href} {...t} active={isActive(t.href)} />)}
+            </div>
+          </nav>
+        )}
+      </div>
+    </AppShell>
   );
 }

@@ -1,139 +1,98 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowRight, Eye, Crown, Lock, CheckCircle2, MapPin } from "lucide-react";
-import Avatar from "@/components/ui/Avatar";
-import Button from "@/components/ui/Button";
+import { Crown, Eye, Lock } from "lucide-react";
+import Button from "@/components/hala/Button";
+import { CenterSpinner, EmptyState, TopBar } from "@/components/hala/Common";
+import { VerifiedBadge } from "@/components/hala/Badges";
+import { toast } from "@/components/hala/Toast";
 import { userAPI } from "@/lib/api";
-import { useAuthStore } from "@/stores/authStore";
-import { formatDate } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { logError } from "@/lib/logger";
+import { countryName } from "@/lib/countries";
+import { formatDate, getImageUrl } from "@/lib/utils";
 
-interface Visitor {
-  viewer: {
-    _id: string;
-    name: string;
-    profileImage?: string;
-    country?: string;
-    isVerified?: boolean;
-    isPremium?: boolean;
-  };
+type View = {
+  viewer: { _id: string | null; name: string | null; profileImage: string | null; country?: string | null; isVerified?: boolean };
   createdAt: string;
-}
+};
+type Data = { totalViews?: number; views?: View[]; page?: number; totalPages?: number; isPremiumRequired?: boolean };
 
 export default function VisitorsPage() {
-  const router = useRouter();
-  const { user } = useAuthStore();
-  const [visitors, setVisitors] = useState<Visitor[]>([]);
-  const [totalViews, setTotalViews] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [views, setViews] = useState<View[]>([]);
+  const [total, setTotal] = useState(0);
+  const [locked, setLocked] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [more, setMore] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = (await userAPI.getVisitors()) as {
-          success: boolean;
-          data?: { views?: Visitor[]; totalViews?: number; hiddenCount?: number };
-        };
-        if (res.success && res.data) {
-          setVisitors(res.data.views || []);
-          setTotalViews(res.data.totalViews || 0);
-        }
-      } catch (err) {
-        logError("visitors", err);
-        // silent
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    load();
+  const load = useCallback(async (p: number) => {
+    if (p === 1) setLoading(true); else setMore(true);
+    const res = await userAPI.visitors(p);
+    const d = res.data as Data | undefined;
+    if (res.success && d) {
+      setViews((prev) => (p === 1 ? d.views || [] : [...prev, ...(d.views || [])]));
+      setTotal(d.totalViews || 0);
+      setLocked(!!d.isPremiumRequired);
+      setPage(p);
+      setTotalPages(d.totalPages || 1);
+    } else if (!res.success) toast.error(res.message || "تعذّر جلب الزوّار");
+    setLoading(false); setMore(false);
   }, []);
 
-  const isPremium = user?.isPremium;
+  useEffect(() => { load(1); }, [load]);
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.back()} className="text-text-muted hover:text-text-primary">
-          <ArrowRight size={22} />
-        </button>
-        <h1 className="text-xl font-black">زوّار ملفك</h1>
-      </div>
-
-      {/* Stats Card */}
-      <div className="bg-gradient-to-br from-accent-pink/10 to-accent-purple/10 border border-accent-pink/20 rounded-2xl p-6 mb-6 text-center">
-        <Eye size={32} className="text-accent-pink mx-auto mb-2" />
-        <p className="text-4xl font-black mb-1">{totalViews}</p>
-        <p className="text-sm text-text-muted">شخص شاهدوا ملفك</p>
-      </div>
-
-      {/* Content */}
-      {isLoading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full" />
-          ))}
-        </div>
-      ) : !isPremium ? (
-        /* Premium Lock */
-        <div className="bg-bg-card border border-warning/30 rounded-2xl p-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
-            <Lock size={32} className="text-warning" />
-          </div>
-          <h3 className="font-black text-lg mb-2">ميزة Premium</h3>
-          <p className="text-text-muted text-sm mb-6 leading-relaxed">
-            اشترك في Premium لترى من شاهد ملفك الشخصي وتواصل معهم مباشرة
-          </p>
-          <Link href="/premium">
-            <Button size="lg">
-              <Crown size={20} />
-              اشترك في Premium
-            </Button>
-          </Link>
-        </div>
-      ) : visitors.length === 0 ? (
-        <div className="text-center py-20">
-          <Eye size={48} className="text-text-muted/30 mx-auto mb-4" />
-          <h3 className="text-lg font-bold mb-2">لا يوجد زوّار بعد</h3>
-          <p className="text-text-muted text-sm">سيظهرون هنا عندما يشاهد أحد ملفك</p>
-        </div>
+    <div className="max-w-3xl mx-auto">
+      <TopBar title="الزوّار" back />
+      {loading ? <CenterSpinner /> : !total ? (
+        <EmptyState icon={Eye} title="لا زوّار بعد" text="حين يزور أحد ملفك يظهر هنا. أكمل ملفك ليظهر أكثر في الاكتشاف."
+          action={<Link href="/profile/edit"><Button variant="secondary">تحسين ملفي</Button></Link>} />
       ) : (
-        <div className="space-y-2">
-          {visitors.map((v, i) => (
-            <Link
-              key={`${v.viewer._id}-${i}`}
-              href={`/profile/${v.viewer._id}`}
-              className="flex items-center gap-3 p-3 bg-bg-card border border-border rounded-2xl hover:bg-bg-hover hover:border-accent-pink/30 transition-all"
-            >
-              <Avatar
-                src={v.viewer.profileImage}
-                name={v.viewer.name}
-                size="md"
-                isPremium={v.viewer.isPremium}
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-sm truncate">{v.viewer.name}</h3>
-                  {v.viewer.isVerified && (
-                    <CheckCircle2 size={14} className="text-accent-pink shrink-0" />
+        <div className="p-4 space-y-4">
+          <p className="text-sm text-h-text2">زار ملفك <b className="text-h-text">{total}</b> {total === 1 ? "شخص" : "أشخاص"}</p>
+
+          {locked && (
+            <div className="rounded-2xl p-5 bg-gradient-to-br from-[#FFD600]/20 to-[#FF8C00]/15 border border-h-gold/40 text-center">
+              <Crown size={32} className="text-h-gold mx-auto mb-2" />
+              <h2 className="font-extrabold text-lg">اعرف من زار ملفك</h2>
+              <p className="text-sm text-h-text2 mt-1 mb-4 leading-6">أسماء الزوّار وصورهم متاحة لمشتركي هلا+.</p>
+              <Link href="/premium"><Button variant="gold">اشترك في هلا+</Button></Link>
+            </div>
+          )}
+
+          <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {views.map((v, i) => {
+              const card = (
+                <div className="aspect-[3/4] bg-h-chip relative">
+                  {v.viewer.profileImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={getImageUrl(v.viewer.profileImage, "medium")} alt={v.viewer.name ? `صورة ${v.viewer.name}` : ""} loading="lazy" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-h-primary/25 to-h-secondary/25">
+                      <Lock size={28} className="text-h-text2" />
+                    </div>
                   )}
-                </div>
-                {v.viewer.country && (
-                  <div className="flex items-center gap-1 text-xs text-text-muted">
-                    <MapPin size={10} />
-                    <span>{v.viewer.country}</span>
+                  <div className="absolute inset-x-0 bottom-0 p-2.5 pt-10 bg-gradient-to-t from-black/75 to-transparent text-white">
+                    <p className="font-extrabold text-sm truncate flex items-center gap-1">
+                      {v.viewer.name || "زائر مخفي"} {v.viewer.isVerified && <VerifiedBadge size={14} />}
+                    </p>
+                    <p className="text-[11px] opacity-85 truncate">{[countryName(v.viewer.country), formatDate(v.createdAt)].filter(Boolean).join(" · ")}</p>
                   </div>
-                )}
-              </div>
-              <span className="text-xs text-text-muted shrink-0">
-                {formatDate(v.createdAt)}
-              </span>
-            </Link>
-          ))}
+                </div>
+              );
+              return (
+                <li key={`${v.viewer._id || "x"}-${v.createdAt}-${i}`} className="rounded-2xl overflow-hidden border border-h-border bg-h-card">
+                  {v.viewer._id ? <Link href={`/profile/${v.viewer._id}`} className="block">{card}</Link>
+                    : <Link href="/premium" className="block" aria-label="اشترك لرؤية الزائر">{card}</Link>}
+                </li>
+              );
+            })}
+          </ul>
+
+          {!locked && page < totalPages && (
+            <Button variant="secondary" loading={more} onClick={() => load(page + 1)}>المزيد</Button>
+          )}
         </div>
       )}
     </div>

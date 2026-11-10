@@ -62,6 +62,15 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    // صفحات قديمة دُمجت: الطلبات والتطابقات في المحادثات، والخصوصية والإشعارات في الإعدادات
+    return [
+      { source: "/requests", destination: "/chats", permanent: true },
+      { source: "/matches", destination: "/chats", permanent: true },
+      { source: "/settings/privacy", destination: "/settings", permanent: true },
+      { source: "/settings/notifications", destination: "/settings", permanent: true },
+    ];
+  },
   async rewrites() {
     return [
       {

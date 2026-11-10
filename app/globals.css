@@ -166,3 +166,111 @@ html[data-auth="in"] .auth-out {
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   هوية التطبيق (تطبيق الويب: (app) و(auth)) — مرجعها AppColors.swift في iOS.
+   محصورة في .hala كي لا تمسّ الصفحات التسويقية الداكنة.
+   الوضع: [data-theme] على <html> يضبطه سكربت الرأس قبل أول رسم
+   (تفضيل المستخدم في localStorage "hala-theme": light | dark | system).
+   ═══════════════════════════════════════════════════════════════════════ */
+.hala {
+  --h-primary: #E91E8C;
+  --h-secondary: #7B1FA2;
+  --h-accent: #D32F2F;
+  --h-bg: #F6F6F8;
+  --h-card: #FFFFFF;
+  --h-input: #F1F1F5;
+  --h-text: #16161A;
+  --h-text2: #6E6E78;
+  --h-inverted: #FFFFFF;
+  --h-success: #2E9E4F;
+  --h-warning: #B7791F;
+  --h-error: #D32F2F;
+  --h-info: #5B5BD6;
+  --h-border: #E3E3E9;
+  --h-divider: #ECECF1;
+  --h-chip: #F1F1F5;
+  --h-overlay: rgba(22, 22, 26, 0.45);
+  --h-shadow: 0 1px 2px rgba(22, 22, 26, 0.04), 0 4px 16px rgba(22, 22, 26, 0.06);
+  --h-gold: #F5B301;
+  /* فقاعة المرسل الافتراضية (BubbleTheme "default") */
+  --h-bubble-from: #D81B7C;
+  --h-bubble-to: #7B2CBF;
+  color-scheme: light;
+  background: var(--h-bg);
+  color: var(--h-text);
+  font-family: var(--font-cairo), var(--font-tajawal), system-ui, sans-serif;
+}
+html[data-theme="dark"] .hala {
+  --h-primary: #FF4DB8;
+  --h-secondary: #CE93D8;
+  --h-accent: #FF5252;
+  --h-bg: #0D0010;
+  --h-card: #1A0020;
+  --h-input: #2D0035;
+  --h-text: #FFFFFF;
+  --h-text2: #CE93D8;
+  --h-inverted: #1A0020;
+  --h-success: #81C784;
+  --h-warning: #FFD54F;
+  --h-error: #FF5252;
+  --h-info: #CE93D8;
+  --h-border: #4A0050;
+  --h-divider: #2D0035;
+  --h-chip: #2D0035;
+  --h-overlay: rgba(0, 0, 0, 0.6);
+  --h-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+/* صفحات التطبيق تغطي الخلفية كاملة (body داكن للصفحات التسويقية) */
+html[data-app] body { background: var(--h-page-bg, #F6F6F8); }
+html[data-app][data-theme="dark"] body { --h-page-bg: #0D0010; }
+
+@theme inline {
+  --color-h-primary: var(--h-primary);
+  --color-h-secondary: var(--h-secondary);
+  --color-h-accent: var(--h-accent);
+  --color-h-bg: var(--h-bg);
+  --color-h-card: var(--h-card);
+  --color-h-input: var(--h-input);
+  --color-h-text: var(--h-text);
+  --color-h-text2: var(--h-text2);
+  --color-h-inverted: var(--h-inverted);
+  --color-h-success: var(--h-success);
+  --color-h-warning: var(--h-warning);
+  --color-h-error: var(--h-error);
+  --color-h-info: var(--h-info);
+  --color-h-border: var(--h-border);
+  --color-h-divider: var(--h-divider);
+  --color-h-chip: var(--h-chip);
+  --color-h-gold: var(--h-gold);
+}
+
+.hala ::selection { background: color-mix(in srgb, var(--h-primary) 25%, transparent); color: inherit; }
+.hala input, .hala textarea, .hala select, .hala button { font-family: inherit; }
+.h-gradient { background-image: linear-gradient(to left, var(--h-primary), var(--h-accent)); }
+.h-gradient-text {
+  background-image: linear-gradient(to left, var(--h-primary), var(--h-accent));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.h-bubble-mine { background-image: linear-gradient(135deg, var(--h-bubble-from), var(--h-bubble-to)); color: #fff; }
+.h-shadow { box-shadow: var(--h-shadow); }
+.h-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.h-scroll::-webkit-scrollbar-track { background: transparent; }
+.h-scroll::-webkit-scrollbar-thumb { background: var(--h-border); border-radius: 3px; }
+.h-no-scrollbar { scrollbar-width: none; }
+.h-no-scrollbar::-webkit-scrollbar { display: none; }
+
+@keyframes h-pop { 0% { transform: scale(.6); opacity: 0 } 70% { transform: scale(1.06) } 100% { transform: scale(1); opacity: 1 } }
+.h-pop { animation: h-pop .35s ease-out both; }
+@keyframes h-fade { from { opacity: 0 } to { opacity: 1 } }
+.h-fade { animation: h-fade .2s ease-out both; }
+@keyframes h-sheet { from { transform: translateY(24px); opacity: 0 } to { transform: none; opacity: 1 } }
+.h-sheet { animation: h-sheet .25s ease-out both; }
+@keyframes h-typing { 0%, 60%, 100% { transform: translateY(0); opacity: .4 } 30% { transform: translateY(-3px); opacity: 1 } }
+.h-typing-dot { animation: h-typing 1.2s infinite; }
+.h-typing-dot:nth-child(2) { animation-delay: .15s }
+.h-typing-dot:nth-child(3) { animation-delay: .3s }
+@media (prefers-reduced-motion: reduce) {
+  .h-pop, .h-fade, .h-sheet, .h-typing-dot { animation: none; }
+}

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Tajawal } from "next/font/google";
+import { Tajawal, Cairo } from "next/font/google";
 import ToastContainer from "@/components/ui/Toast";
 import "./globals.css";
 
@@ -7,6 +7,14 @@ const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "700", "900"],
   variable: "--font-tajawal",
+  display: "swap",
+});
+
+// خط التطبيق (Cairo كما في iOS) — للصفحات داخل .hala
+const cairo = Cairo({
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-cairo",
   display: "swap",
 });
 
@@ -94,8 +102,9 @@ export default function RootLayout({
   return (
     <html
       lang="ar"
+      suppressHydrationWarning
       dir="rtl"
-      className={`h-full antialiased ${tajawal.variable}`}
+      className={`h-full antialiased ${tajawal.variable} ${cairo.variable}`}
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
@@ -108,7 +117,9 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{document.documentElement.dataset.auth=localStorage.getItem('token')?'in':'out'}catch(e){document.documentElement.dataset.auth='out'}",
+              "try{document.documentElement.dataset.auth=localStorage.getItem('token')?'in':'out'}catch(e){document.documentElement.dataset.auth='out'}" +
+              // وضع التطبيق (فاتح/داكن/النظام) قبل أول رسم — لا وميض
+              ";try{var t=localStorage.getItem('hala-theme')||'system';if(t==='system')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme='light'}",
           }}
         />
       </head>
