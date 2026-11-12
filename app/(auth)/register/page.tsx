@@ -173,6 +173,25 @@ function RegisterFlow() {
     terms: ["آخر خطوة", "راجع الشروط ثم ابدأ"],
   };
 
+  // 🚫 لا تسجيل بالبريد من الموقع (١٢ نوفمبر ٢٠٢٦): المتصفح بلا معرّف جهاز يُحظر فاستُغلّ لحسابات مسيئة متتالية.
+  //    السيرفر يرفضه (WEB_EMAIL_SIGNUP_DISABLED)؛ البريد من التطبيق وحده.
+  if (!profileOnly) {
+    return (
+      <div>
+        <h1 className="text-2xl font-extrabold">أنشئ حسابك</h1>
+        <p className="text-sm text-h-text2 mt-1 mb-6 leading-6">سجّل على الموقع بحساب Google أو Apple.</p>
+        {error && <p role="alert" className="text-sm font-semibold text-h-error bg-h-error/10 rounded-xl px-4 py-3 mb-4">{error}</p>}
+        <SocialButtons onResult={onSocial} onError={setError} disabled={loading} />
+        <p className="text-sm text-h-text2 mt-6 leading-6 text-center">
+          تفضّل التسجيل بالبريد الإلكتروني؟ متاح من <Link href="/download" className="text-h-primary font-bold hover:underline">تطبيق هلا</Link>.
+        </p>
+        <p className="text-center text-sm text-h-text2 mt-7">
+          لديك حساب؟ <Link href="/login" className="text-h-primary font-bold hover:underline">سجّل الدخول</Link>
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* شريط التقدّم + رجوع */}
