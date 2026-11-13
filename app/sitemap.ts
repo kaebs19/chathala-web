@@ -14,6 +14,7 @@ type Freq = MetadataRoute.Sitemap[number]["changeFrequency"];
 const routes: Array<{ path: string; changeFrequency: Freq; priority: number; bilingual?: boolean }> = [
   { path: "/", changeFrequency: "weekly", priority: 1, bilingual: true },
   { path: "/blog", changeFrequency: "weekly", priority: 0.9, bilingual: true },
+  { path: "/games", changeFrequency: "monthly", priority: 0.8, bilingual: true },
   { path: "/download", changeFrequency: "monthly", priority: 0.9, bilingual: true },
   { path: "/about", changeFrequency: "monthly", priority: 0.8, bilingual: true },
   { path: "/support", changeFrequency: "monthly", priority: 0.7, bilingual: true },

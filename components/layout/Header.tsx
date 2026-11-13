@@ -15,14 +15,14 @@ import { lp, switchLocalePath } from "@/lib/i18n";
 // المسارات بصيغتها العربية وتُحوَّل بـ lp() — اللغة من المسار (/en…) فلا حاجة لتمريرها.
 const T = {
   ar: {
-    sections: [["/#features", "المزايا"], ["/#start", "ابدأ من هنا"], ["/blog", "المقالات"]],
+    sections: [["/#features", "المزايا"], ["/games", "الألعاب"], ["/blog", "المقالات"]],
     more: [["/about", "عن هلا"], ["/download", "تحميل التطبيق"], ["/support", "الدعم"], ["/contact", "اتصل بنا"]],
     home: "هلا — الرئيسية", navSections: "أقسام الصفحة", light: "الوضع الفاتح", dark: "الوضع الداكن",
     login: "دخول", start: "ابدأ مجاناً", chats: "محادثاتي", me: "ملفي", close: "إغلاق القائمة", menu: "القائمة",
     haveAccount: "لدي حساب — دخول", orDownload: "أو حمّل التطبيق", other: "English", otherShort: "EN",
   },
   en: {
-    sections: [["/#features", "Features"], ["/#start", "Start here"], ["/blog", "Blog"]],
+    sections: [["/#features", "Features"], ["/games", "Games"], ["/blog", "Blog"]],
     more: [["/about", "About Hala"], ["/download", "Download"], ["/support", "Support"], ["/contact", "Contact"]],
     home: "Hala — Home", navSections: "Page sections", light: "Light mode", dark: "Dark mode",
     login: "Log in", start: "Start free", chats: "My chats", me: "My profile", close: "Close menu", menu: "Menu",

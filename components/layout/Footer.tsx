@@ -12,7 +12,7 @@ const T = {
   ar: {
     tagline: "دردشة وتعارف عربي — من الجوال أو المتصفح، بخصوصية وأمان.",
     cols: [
-      ["التطبيق", [["/download", "تحميل التطبيق"], ["/about", "حول ChatHala"], ["/blog", "المقالات"], ["/premium", "المميزات المدفوعة"]]],
+      ["التطبيق", [["/download", "تحميل التطبيق"], ["/about", "حول ChatHala"], ["/games", "الألعاب"], ["/blog", "المقالات"], ["/premium", "المميزات المدفوعة"]]],
       ["الدعم", [["/contact", "اتصل بنا"], ["/support", "الدعم الفني"], ["/support#faq", "الأسئلة الشائعة"]]],
       ["قانوني", [["/privacy", "سياسة الخصوصية"], ["/terms", "شروط الاستخدام"], ["/child-safety", "معايير سلامة الأطفال"], ["/report-content", "طلب إزالة محتوى"]]],
     ],
@@ -21,7 +21,7 @@ const T = {
   en: {
     tagline: "Arabic chat and friendship — on mobile or in the browser, private and safe.",
     cols: [
-      ["App", [["/download", "Download the app"], ["/about", "About ChatHala"], ["/blog", "Blog"]]],
+      ["App", [["/download", "Download the app"], ["/about", "About ChatHala"], ["/games", "Games"], ["/blog", "Blog"]]],
       ["Support", [["/contact", "Contact us"], ["/support", "Help centre"], ["/support#faq", "FAQ"]]],
       ["Legal", [["/privacy", "Privacy Policy"], ["/terms", "Terms of Use"], ["/child-safety", "Child Safety Standards"], ["/report-content", "Request content removal"]]],
     ],

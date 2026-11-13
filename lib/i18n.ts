@@ -17,7 +17,7 @@ export function lp(locale: Locale, path: string): string {
 const AR_ONLY = ["/report-content", "/child-safety", "/login", "/register", "/forgot-password", "/chats", "/profile", "/premium"];
 
 /** الصفحات العامة التي لها نسخة باللغتين (بصيغتها العربية) */
-const BILINGUAL = ["/", "/about", "/download", "/support", "/contact", "/terms", "/privacy", "/blog"];
+const BILINGUAL = ["/", "/about", "/download", "/support", "/contact", "/terms", "/privacy", "/blog", "/games"];
 
 /** من مسار حالي ← المسار المقابل باللغة الأخرى (أو رئيسية تلك اللغة إن لم توجد نسخة) */
 export function switchLocalePath(pathname: string): { locale: Locale; target: Locale; href: string } {
