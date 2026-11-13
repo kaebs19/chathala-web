@@ -20,7 +20,7 @@ export default function PrivacyPageEn() {
           <Shield size={32} className="text-white" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-black mb-4">Privacy Policy</h1>
-        <p className="text-text-muted">Last updated: November 13, 2026</p>
+        <p className="text-text-muted">Last updated: November 14, 2026</p>
         <Link href="/privacy" className="text-accent-pink hover:underline text-sm" lang="ar">
           النسخة العربية
         </Link>
@@ -49,7 +49,7 @@ export default function PrivacyPageEn() {
           <p><strong>Information collected automatically:</strong></p>
           <ul>
             <li><strong>Device and usage:</strong> device type, operating system, app version, IP address, sign-in times, and in-app interactions such as likes and profile visits.</li>
-            <li><strong>Device identifiers:</strong> an app-specific identifier we use to protect the platform and enforce bans on violating accounts.</li>
+            <li><strong>Device identifiers:</strong> an app-specific identifier we use to protect the platform, enforce bans on violating accounts, and prevent two accounts on the same device from playing each other in game competitions.</li>
             <li><strong>Crash and performance reports:</strong> to fix technical issues.</li>
           </ul>
           <p>
@@ -120,7 +120,35 @@ export default function PrivacyPageEn() {
           </ul>
         </PolicySection>
 
-        <PolicySection ltr title="6. Sensitive Content">
+        <PolicySection ltr title="6. Games (Hala Ludo)">
+          <ul>
+            <li>
+              <strong>Your results and stats:</strong> we store your match results (players, winner, places) and your
+              stats such as matches played, wins, stars and rank, as well as your coin and gem balance.
+            </li>
+            <li>
+              <strong>What other players see:</strong> in a match and on your player card: your name, photo, country,
+              join date, stats and rank. On the public weekly leaderboard: your name, photo, stars and position.
+            </li>
+            <li>
+              <strong>Match chat:</strong> messages are scanned automatically like chats (outside promotion and banned
+              words) and violating ones are rejected. We keep each match's latest messages with its record to review
+              reports and moderate.
+            </li>
+            <li>
+              <strong>Coins and gems</strong> are in-game currency only: they cannot be exchanged for money or
+              transferred to others. Purchases are processed by Apple, and if you get a refund from Apple, what that
+              purchase granted is removed from your balance.
+            </li>
+            <li>
+              <strong>Rewarded ads:</strong> if you choose to watch an ad for a reward, we send Google AdMob your
+              account ID with us and a viewing token, so it can confirm to our server that you finished it before the
+              reward is granted.
+            </li>
+          </ul>
+        </PolicySection>
+
+        <PolicySection ltr title="7. Sensitive Content">
           <p>
             If you turn on Sensitive Content Warning in iOS settings, the app blurs sensitive photos and videos you
             receive. This check runs <strong>only on your device</strong> using Apple technology; no content is sent
@@ -128,7 +156,7 @@ export default function PrivacyPageEn() {
           </p>
         </PolicySection>
 
-        <PolicySection ltr title="7. Third-Party Services">
+        <PolicySection ltr title="8. Third-Party Services">
           <p>We use the following services, each with its own privacy policy:</p>
           <ul>
             <li><strong>Google Firebase:</strong> push notifications and crash reports</li>
@@ -140,7 +168,7 @@ export default function PrivacyPageEn() {
           </ul>
         </PolicySection>
 
-        <PolicySection ltr title="8. Advertising">
+        <PolicySection ltr title="9. Advertising">
           <p>
             The app shows ads through Google AdMob; Hala+ subscribers see no ads. We use your advertising identifier
             for personalized ads only with your consent through the iOS &quot;Allow Tracking&quot; prompt, and you can
@@ -158,7 +186,7 @@ export default function PrivacyPageEn() {
           </p>
         </PolicySection>
 
-        <PolicySection ltr title="9. Data Security">
+        <PolicySection ltr title="10. Data Security">
           <p>
             We take appropriate security measures to protect your information, including encrypting the connection
             between the app and our servers (SSL/TLS) and restricting archived media to our moderation team only.
@@ -166,7 +194,7 @@ export default function PrivacyPageEn() {
           </p>
         </PolicySection>
 
-        <PolicySection ltr title="10. Data Retention">
+        <PolicySection ltr title="11. Data Retention">
           <ul>
             <li><strong>Your account data:</strong> for as long as your account exists.</li>
             <li>
@@ -174,6 +202,7 @@ export default function PrivacyPageEn() {
               again, which restores your account as it was. You can delete it permanently at any time.
             </li>
             <li><strong>Disappearing media and stories after they end:</strong> 30 days, as described above.</li>
+            <li><strong>Match results and chat:</strong> kept with the match record, to keep competitions fair and review reports.</li>
             <li>
               <strong>When you delete your account:</strong> your profile data is deleted immediately and your
               messages are disassociated from your identity. We keep security and anti-fraud records (such as the
@@ -190,7 +219,7 @@ export default function PrivacyPageEn() {
           </ul>
         </PolicySection>
 
-        <PolicySection ltr title="11. Your Rights">
+        <PolicySection ltr title="12. Your Rights">
           <ul>
             <li>Access your personal data and request a copy of it</li>
             <li>Edit or correct your data in the app or by contacting us</li>
@@ -203,7 +232,7 @@ export default function PrivacyPageEn() {
           </ul>
         </PolicySection>
 
-        <PolicySection ltr title="12. Children's Privacy">
+        <PolicySection ltr title="13. Children's Privacy">
           <p>
             Hala is not intended for anyone under <strong>18</strong>. We do not knowingly collect information from
             minors. If we learn that someone under 18 has provided us with information, we delete it and close the
@@ -211,11 +240,11 @@ export default function PrivacyPageEn() {
           </p>
         </PolicySection>
 
-        <PolicySection ltr title="13. Changes to This Policy">
+        <PolicySection ltr title="14. Changes to This Policy">
           <p>We may update this policy from time to time and will notify you of material changes in the app.</p>
         </PolicySection>
 
-        <PolicySection ltr title="14. Contact Us">
+        <PolicySection ltr title="15. Contact Us">
           <p>
             For any question about this policy or to exercise your rights, email{" "}
             <a href="mailto:kaebs19@gmail.com" className="text-accent-pink hover:underline">

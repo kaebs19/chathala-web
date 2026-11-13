@@ -20,7 +20,7 @@ export default function PrivacyPage() {
           <Shield size={32} className="text-white" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-black mb-4">سياسة الخصوصية</h1>
-        <p className="text-text-muted">آخر تحديث: ١٣ نوفمبر ٢٠٢٦</p>
+        <p className="text-text-muted">آخر تحديث: ١٤ نوفمبر ٢٠٢٦</p>
         <Link href="/privacy/en" className="text-accent-pink hover:underline text-sm" lang="en">
           English version
         </Link>
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
           <p><strong>معلومات تُجمع تلقائياً:</strong></p>
           <ul>
             <li><strong>الجهاز والاستخدام:</strong> نوع الجهاز ونظام التشغيل وإصدار التطبيق وعنوان IP وأوقات الدخول، وتفاعلك داخل التطبيق كالإعجابات والزيارات.</li>
-            <li><strong>معرّفات الجهاز:</strong> معرّف خاص بالتطبيق نستخدمه لحماية المنصة وتطبيق قرارات الحظر على الحسابات المخالفة.</li>
+            <li><strong>معرّفات الجهاز:</strong> معرّف خاص بالتطبيق نستخدمه لحماية المنصة وتطبيق قرارات الحظر على الحسابات المخالفة، ولمنع لعب حسابين على الجهاز نفسه ضدّ بعضهما في مسابقات الألعاب.</li>
             <li><strong>تقارير الأعطال والأداء:</strong> لإصلاح المشكلات التقنية.</li>
           </ul>
           <p>
@@ -120,14 +120,39 @@ export default function PrivacyPage() {
           </ul>
         </PolicySection>
 
-        <PolicySection title="6. المحتوى الحساس">
+        <PolicySection title="6. الألعاب (هلا لودو)">
+          <ul>
+            <li>
+              <strong>نتائجك وإحصاءاتك:</strong> نحفظ نتائج مبارياتك (المشاركون، والفائز، والمراكز) وإحصاءاتك
+              كعدد المباريات والانتصارات والنجوم والمرتبة، ورصيدك من العملات والجواهر.
+            </li>
+            <li>
+              <strong>ما يراه اللاعبون الآخرون:</strong> في المباراة وفي «بطاقة اللاعب»: اسمك وصورتك ودولتك وتاريخ
+              انضمامك وإحصاءاتك ومرتبتك. وفي الترتيب الأسبوعي العام: اسمك وصورتك ونجومك ومركزك.
+            </li>
+            <li>
+              <strong>دردشة المباراة:</strong> تُفحص الرسائل آلياً كالمحادثات (الترويج الخارجي والكلمات المحظورة)
+              وتُرفض المخالفة منها. ونحفظ آخر رسائل كل مباراة مع سجلّها لمراجعة البلاغات والإشراف.
+            </li>
+            <li>
+              <strong>العملات والجواهر</strong> عملة لعب داخل التطبيق فقط: لا تُستبدل بمال ولا تُحوَّل لغيرك. ما
+              تشتريه منها يُعالَج عبر Apple، وإن استرددت ثمن عملية شراء من Apple سُحب ما منحته من رصيدك.
+            </li>
+            <li>
+              <strong>الإعلان بمكافأة:</strong> إن اخترت مشاهدة إعلان مقابل مكافأة، نرسل إلى Google AdMob معرّف
+              حسابك لدينا ورمزاً للمشاهدة، ليؤكد لخادمنا اكتمالها قبل منح المكافأة.
+            </li>
+          </ul>
+        </PolicySection>
+
+        <PolicySection title="7. المحتوى الحساس">
           <p>
             عند تفعيلك «تحذير المحتوى الحساس» في إعدادات iOS، يموّه التطبيق الصور والفيديو الحساسة المستلَمة.
             يجري هذا الفحص <strong>على جهازك فقط</strong> عبر تقنية Apple، ولا يُرسل أي محتوى إلينا أو إلى غيرنا.
           </p>
         </PolicySection>
 
-        <PolicySection title="7. خدمات الطرف الثالث">
+        <PolicySection title="8. خدمات الطرف الثالث">
           <p>نستعين بالخدمات التالية، ولكلٍّ منها سياسة خصوصيته:</p>
           <ul>
             <li><strong>Google Firebase:</strong> إرسال الإشعارات وتقارير الأعطال</li>
@@ -139,7 +164,7 @@ export default function PrivacyPage() {
           </ul>
         </PolicySection>
 
-        <PolicySection title="8. الإعلانات">
+        <PolicySection title="9. الإعلانات">
           <p>
             يعرض التطبيق إعلانات عبر Google AdMob، ولا تظهر لمشتركي «هلا+». لا نستخدم معرّف الإعلانات لإعلانات
             مخصّصة إلا بموافقتك عبر نافذة «السماح بالتتبّع» في iOS، ويمكنك تغيير ذلك في أي وقت من إعدادات جهازك.
@@ -155,7 +180,7 @@ export default function PrivacyPage() {
           </p>
         </PolicySection>
 
-        <PolicySection title="9. حماية البيانات">
+        <PolicySection title="10. حماية البيانات">
           <p>
             نتخذ إجراءات أمنية مناسبة لحماية معلوماتك، منها تشفير الاتصال بين التطبيق وخوادمنا (SSL/TLS)،
             وتقييد الوصول إلى الوسائط المؤرشفة لفريق الإشراف فقط. ومع ذلك، لا يمكن ضمان أمان أي نقل عبر
@@ -163,7 +188,7 @@ export default function PrivacyPage() {
           </p>
         </PolicySection>
 
-        <PolicySection title="10. مدة الاحتفاظ بالبيانات">
+        <PolicySection title="11. مدة الاحتفاظ بالبيانات">
           <ul>
             <li><strong>بيانات حسابك:</strong> طوال مدة وجوده.</li>
             <li>
@@ -171,6 +196,7 @@ export default function PrivacyPage() {
               كان. ويمكنك حذفه نهائياً في أي وقت.
             </li>
             <li><strong>الوسائط المؤقتة والقصص بعد انتهائها:</strong> 30 يوماً، كما سبق.</li>
+            <li><strong>نتائج المباريات ودردشتها:</strong> مع سجلّ المباراة، لحماية عدالة المسابقات ومراجعة البلاغات.</li>
             <li>
               <strong>عند حذف حسابك:</strong> تُحذف بيانات ملفك فوراً وتُفصل رسائلك عن هويتك. ونحتفظ بسجلّات
               الأمان ومكافحة الاحتيال (مثل معرّف الجهاز للحسابات المخالفة، والبلاغات) لمدة تصل إلى 90 يوماً،
@@ -185,7 +211,7 @@ export default function PrivacyPage() {
           </ul>
         </PolicySection>
 
-        <PolicySection title="11. حقوقك">
+        <PolicySection title="12. حقوقك">
           <ul>
             <li>الوصول إلى بياناتك الشخصية وطلب نسخة منها</li>
             <li>تعديل بياناتك أو تصحيحها من التطبيق أو بالتواصل معنا</li>
@@ -198,18 +224,18 @@ export default function PrivacyPage() {
           </ul>
         </PolicySection>
 
-        <PolicySection title="12. خصوصية القُصّر">
+        <PolicySection title="13. خصوصية القُصّر">
           <p>
             تطبيق «هلا» غير موجّه لمن هم دون <strong>18 عاماً</strong>. لا نجمع عن قصد معلومات عن القُصّر،
             وإذا علمنا أن شخصاً دون 18 عاماً قدّم لنا معلومات، نحذفها ونغلق الحساب فوراً.
           </p>
         </PolicySection>
 
-        <PolicySection title="13. تغييرات على سياسة الخصوصية">
+        <PolicySection title="14. تغييرات على سياسة الخصوصية">
           <p>قد نحدّث هذه السياسة من وقت لآخر، ونُعلمك بأي تغيير جوهري عبر التطبيق.</p>
         </PolicySection>
 
-        <PolicySection title="14. تواصل معنا">
+        <PolicySection title="15. تواصل معنا">
           <p>
             لأي سؤال عن هذه السياسة أو لممارسة حقوقك، راسلنا على{" "}
             <a href="mailto:kaebs19@gmail.com" className="text-accent-pink hover:underline">
