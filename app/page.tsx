@@ -1,12 +1,15 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AppShell from "@/components/hala/AppShell";
+import AdSenseScript from "@/components/shared/AdSenseScript";
+import LatestArticles from "@/components/blog/LatestArticles";
+import { hreflang } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { Features, FinalCta, Hero, StartHere, Stats } from "@/components/landing/HomeSections";
 import { APP_STORE_URL, GOOGLE_PLAY_URL } from "@/lib/links";
 import { SITE_URL } from "@/lib/seo";
 
-export const metadata: Metadata = { alternates: { canonical: "/" } };
+export const metadata: Metadata = { alternates: { canonical: "/", languages: hreflang("/") } };
 
 // بيانات منظّمة: المنظمة والموقع والتطبيق (iOS/Android/الويب) — بلا تقييمات مختلقة
 const JSON_LD = {
@@ -52,12 +55,14 @@ export default function Home() {
   return (
     <AppShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
+      <AdSenseScript />
       <Header />
       <main>
         <Hero />
         <Stats />
         <Features />
         <StartHere />
+        <LatestArticles locale="ar" />
         <FinalCta />
       </main>
       <Footer />

@@ -77,6 +77,8 @@ export const metadata: Metadata = {
   },
   other: {
     "apple-itunes-app": "app-id=1369295351",
+    // ملكية الموقع في AdSense (lib/ads.ts) — الوسم وحده لا يحمّل إعلانات
+    "google-adsense-account": "ca-pub-8219247197168750",
     "facebook-domain-verification": "j886ynnavctlytjrb562xetgro1tqa",
     "mobile-web-app-capable": "yes",
   },

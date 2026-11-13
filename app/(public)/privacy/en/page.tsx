@@ -20,7 +20,7 @@ export default function PrivacyPageEn() {
           <Shield size={32} className="text-white" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-black mb-4">Privacy Policy</h1>
-        <p className="text-text-muted">Last updated: November 10, 2026</p>
+        <p className="text-text-muted">Last updated: November 13, 2026</p>
         <Link href="/privacy" className="text-accent-pink hover:underline text-sm" lang="ar">
           النسخة العربية
         </Link>
@@ -132,7 +132,8 @@ export default function PrivacyPageEn() {
           <p>We use the following services, each with its own privacy policy:</p>
           <ul>
             <li><strong>Google Firebase:</strong> push notifications and crash reports</li>
-            <li><strong>Google AdMob:</strong> displaying ads</li>
+            <li><strong>Google AdMob:</strong> displaying ads in the app</li>
+            <li><strong>Google AdSense:</strong> displaying ads on the public pages and articles of the website</li>
             <li><strong>Apple and Google:</strong> sign in with their accounts (if you choose)</li>
             <li><strong>Apple App Store:</strong> subscription and payment processing — we never see your card details</li>
             <li><strong>Cloudflare:</strong> server protection and faster content delivery</li>
@@ -144,6 +145,16 @@ export default function PrivacyPageEn() {
             The app shows ads through Google AdMob; Hala+ subscribers see no ads. We use your advertising identifier
             for personalized ads only with your consent through the iOS &quot;Allow Tracking&quot; prompt, and you can
             change this at any time in your device settings.
+          </p>
+          <p>
+            <strong>Website (chathala.com):</strong> ads may be shown through Google AdSense on public pages and
+            articles only — never inside your chats or on your account pages. Google and its partners use cookies to
+            serve ads based on your visits to this and other websites. You can turn off personalized advertising at{" "}
+            <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-accent-pink hover:underline">adssettings.google.com</a>,
+            and learn how Google uses this data at{" "}
+            <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer" className="text-accent-pink hover:underline">policies.google.com/technologies/partner-sites</a>.
+            Visitors in the European Economic Area, the United Kingdom and Switzerland are asked for consent before
+            advertising cookies are used.
           </p>
         </PolicySection>
 

@@ -325,3 +325,24 @@ html { scroll-padding-top: 80px; }
 /* لا وميض رمادي عند اللمس، ولا تأخير نقرة مزدوجة */
 .hala { -webkit-tap-highlight-color: transparent; }
 .hala a, .hala button { touch-action: manipulation; }
+
+/* ---------------------------------------------------------------- المقالات (/blog) */
+.article-body { color: var(--h-text); font-size: 17px; line-height: 2; }
+.article-body:lang(en), [lang="en"] .article-body { line-height: 1.8; }
+.article-body > * + * { margin-top: 1.15em; }
+.article-body h2 { font-size: 1.5rem; font-weight: 900; line-height: 1.5; margin-top: 2.2em; scroll-margin-top: 90px; }
+.article-body h3 { font-size: 1.2rem; font-weight: 800; line-height: 1.6; margin-top: 1.7em; }
+.article-body p, .article-body li { color: color-mix(in srgb, var(--h-text) 86%, transparent); }
+.article-body ul, .article-body ol { padding-inline-start: 1.5em; }
+.article-body ul { list-style: disc; }
+.article-body ol { list-style: decimal; }
+.article-body li + li { margin-top: .45em; }
+.article-body li::marker { color: var(--h-primary); font-weight: 800; }
+.article-body strong { color: var(--h-text); font-weight: 800; }
+.article-body a { color: var(--h-primary); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.article-body a:hover { filter: brightness(1.1); }
+.article-callout {
+  border-inline-start: 4px solid var(--h-primary);
+  background: color-mix(in srgb, var(--h-primary) 8%, transparent);
+  border-radius: 14px; padding: 14px 18px; font-weight: 600; color: var(--h-text);
+}

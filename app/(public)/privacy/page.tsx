@@ -20,7 +20,7 @@ export default function PrivacyPage() {
           <Shield size={32} className="text-white" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-black mb-4">سياسة الخصوصية</h1>
-        <p className="text-text-muted">آخر تحديث: ١٠ نوفمبر ٢٠٢٦</p>
+        <p className="text-text-muted">آخر تحديث: ١٣ نوفمبر ٢٠٢٦</p>
         <Link href="/privacy/en" className="text-accent-pink hover:underline text-sm" lang="en">
           English version
         </Link>
@@ -131,7 +131,8 @@ export default function PrivacyPage() {
           <p>نستعين بالخدمات التالية، ولكلٍّ منها سياسة خصوصيته:</p>
           <ul>
             <li><strong>Google Firebase:</strong> إرسال الإشعارات وتقارير الأعطال</li>
-            <li><strong>Google AdMob:</strong> عرض الإعلانات</li>
+            <li><strong>Google AdMob:</strong> عرض الإعلانات في التطبيق</li>
+            <li><strong>Google AdSense:</strong> عرض الإعلانات في الصفحات العامة والمقالات على الموقع</li>
             <li><strong>Apple وGoogle:</strong> تسجيل الدخول بحساباتهما (عند اختيارك)</li>
             <li><strong>Apple App Store:</strong> معالجة الاشتراكات والمدفوعات — لا نطّلع على بيانات بطاقتك</li>
             <li><strong>Cloudflare:</strong> حماية الخوادم وتسريع تحميل المحتوى</li>
@@ -142,6 +143,15 @@ export default function PrivacyPage() {
           <p>
             يعرض التطبيق إعلانات عبر Google AdMob، ولا تظهر لمشتركي «هلا+». لا نستخدم معرّف الإعلانات لإعلانات
             مخصّصة إلا بموافقتك عبر نافذة «السماح بالتتبّع» في iOS، ويمكنك تغيير ذلك في أي وقت من إعدادات جهازك.
+          </p>
+          <p>
+            <strong>الموقع (chathala.com):</strong> قد تُعرض إعلانات عبر Google AdSense في الصفحات العامة والمقالات
+            فقط — لا إعلانات داخل محادثاتك ولا في صفحات حسابك. يستخدم Google وشركاؤه ملفات تعريف الارتباط (الكوكيز)
+            لعرض الإعلانات بناءً على زياراتك لهذا الموقع ولمواقع أخرى. يمكنك إيقاف الإعلانات المخصّصة من{" "}
+            <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-accent-pink hover:underline" dir="ltr">adssettings.google.com</a>،
+            ومعرفة كيف يستخدم Google هذه البيانات من{" "}
+            <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer" className="text-accent-pink hover:underline" dir="ltr">policies.google.com/technologies/partner-sites</a>.
+            لزوّار المنطقة الاقتصادية الأوروبية والمملكة المتحدة وسويسرا تُطلب الموافقة قبل استخدام الكوكيز الإعلانية.
           </p>
         </PolicySection>
 
